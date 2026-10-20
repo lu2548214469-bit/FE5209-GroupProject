@@ -1,0 +1,50 @@
+# Frozen configuration of the main strategy: SG Adaptive Top-4.
+# Single source of truth: run_backtest.py and the tests read their settings from here.
+
+name: SG_Adaptive_Top4
+
+data:
+  universe: data/sg_universe_weekly.csv.gz       # cleaned weekly panel (see data/README.md)
+  benchmark: data/sti_total_return_daily.csv     # STI total return index, daily, SGD
+
+factors:                                         # style factor -> score column (higher = more favoured)
+  Quality: quality_score
+  Momentum: momentum_score
+  Low Risk: low_risk_score
+  Investment: investment_score
+  Size: size_score                               # high = small cap (score = -ln market cap)
+  Value: value_score
+
+factor_returns:
+  leg_fraction: 0.30                             # long top 30% minus short bottom 30%, equal weight
+
+selection:                                       # re-run on the first signal week of every year
+  top_k: 4
+  lookback_years: 3                              # rank styles by mean / std of weekly factor returns
+  min_coverage: 0.65                             # style needs >= 65% of lookback weeks to be eligible
+
+weighting:
+  method: IV                                     # EW | IV (inverse volatility) | MV (minimum variance)
+  window_weeks: 52
+  min_weight: 0.05
+  max_weight: 0.80
+  mv_shrinkage: 0.10
+
+portfolio:
+  select_fraction: 0.20                          # buy the top 20% by composite score
+  exit_fraction: 0.30                            # buffer: keep a holding while it stays in the top 30%
+  sector_cap: 0.30                               # max 30% of names in one sector
+  stock_weighting: equal
+
+costs:
+  one_way: 0.0010                                # 10 bp per side
+  stress_one_way: 0.0020                         # also reported at 20 bp
+
+periods:                                         # by SIGNAL date (Friday); each week is held from the
+  backtest_start: "2016-01-01"                   # next trading day's close to the following one
+  pre:  ["2016-01-01", "2018-12-31"]
+  obs:  ["2019-01-01", "2020-12-31"]             # observation period: used to choose the configuration
+  eval: ["2021-01-01", "2026-09-18"]             # evaluation period: last holding ends 2026-09-28 (<= 09-30)
+  live: ["2026-09-25", "2026-10-09"]             # live window: holdings 2026-09-28 -> 2026-10-19
+
+output_dir: outputs
