@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "account_paths": 48,
+  "frozen_target_scenarios": 46,
+  "feedback_scenarios": 2,
+  "synthetic_exit_ledger_tests": 3,
+  "source_files_unchanged": 38,
+  "formal_daily_nav_reproduced": true,
+  "fresh_october_daily_nav_reproduced": true,
+  "order_share_conservation": true,
+  "lot_and_participation_caps_respected": true,
+  "future_fill_date_after_signal": true,
+  "known_lot_revision_no_current_target_impact": true,
+  "actual_holdings_feedback_same_for_100k": true,
+  "metadata": "All account arithmetic/caps checked; no claim of exchange-certified fills or complete corporate actions"
+}

@@ -1,0 +1,4 @@
+order_type,orders,requested_notional,residual_notional,fully_filled,first_day_zero_volume
+ENTRY,84,727079.6314740449,21797.50012403,75,0
+EXIT,68,626147.5145672854,2052.99992518,66,0
+REBALANCE,4164,1491547.0526632636,14963.11759866,4085,28

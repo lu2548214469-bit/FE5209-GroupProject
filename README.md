@@ -225,3 +225,12 @@ See [中文归因报告](performance_attribution/sg_k3_ivweekly_top20_20261021/R
 and [复现说明](performance_attribution/sg_k3_ivweekly_top20_20261021/README_ZH.md).
 The analysis adds stock, sector-group, dividend, FX, cost, drawdown and benchmark-relative
 contributions without changing the strategy, execution configuration, or input data.
+
+
+## Investability / 可投资性
+
+See the [current K3 investability report](investability/sg_k3_ivweekly_top20_20261021/REPORT_ZH.md),
+[reproduction guide](investability/sg_k3_ivweekly_top20_20261021/README_ZH.md), and
+[current versus historical version notes](investability/README.md).
+This additive study replays execution scenarios and exit paths without changing the frozen
+strategy, execution configuration, data, main entry point, or existing attribution.

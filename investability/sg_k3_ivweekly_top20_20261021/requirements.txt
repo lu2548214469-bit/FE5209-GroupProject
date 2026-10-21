@@ -1,0 +1,6 @@
+# Observed numerical environment, Python 3.12.14
+numpy==2.5.4
+pandas==2.2.3
+scipy==1.18.1
+PyYAML==6.0.2
+matplotlib==3.11.2

@@ -1,0 +1,361 @@
+[
+  {
+    "name": "capital_25000",
+    "family": "capital",
+    "settings": {
+      "initial_cash": 25000
+    }
+  },
+  {
+    "name": "capital_50000",
+    "family": "capital",
+    "settings": {
+      "initial_cash": 50000
+    }
+  },
+  {
+    "name": "capital_100000",
+    "family": "capital",
+    "settings": {
+      "initial_cash": 100000
+    }
+  },
+  {
+    "name": "capital_250000",
+    "family": "capital",
+    "settings": {
+      "initial_cash": 250000
+    }
+  },
+  {
+    "name": "capital_500000",
+    "family": "capital",
+    "settings": {
+      "initial_cash": 500000
+    }
+  },
+  {
+    "name": "capital_1000000",
+    "family": "capital",
+    "settings": {
+      "initial_cash": 1000000
+    }
+  },
+  {
+    "name": "capital_2000000",
+    "family": "capital",
+    "settings": {
+      "initial_cash": 2000000
+    }
+  },
+  {
+    "name": "capital_5000000",
+    "family": "capital",
+    "settings": {
+      "initial_cash": 5000000
+    }
+  },
+  {
+    "name": "participation_1pct_100000",
+    "family": "participation",
+    "settings": {
+      "initial_cash": 100000,
+      "participation": 0.01
+    }
+  },
+  {
+    "name": "participation_5pct_100000",
+    "family": "participation",
+    "settings": {
+      "initial_cash": 100000,
+      "participation": 0.05
+    }
+  },
+  {
+    "name": "volume_half_100000",
+    "family": "volume",
+    "settings": {
+      "initial_cash": 100000
+    },
+    "volume_multiplier": 0.5
+  },
+  {
+    "name": "life_1_100000",
+    "family": "order_life",
+    "settings": {
+      "initial_cash": 100000,
+      "max_order_sessions": 1
+    }
+  },
+  {
+    "name": "life_3_100000",
+    "family": "order_life",
+    "settings": {
+      "initial_cash": 100000,
+      "max_order_sessions": 3
+    }
+  },
+  {
+    "name": "lot1_100000",
+    "family": "lot_diagnostic",
+    "settings": {
+      "initial_cash": 100000,
+      "default_lot": 1
+    }
+  },
+  {
+    "name": "lot_revision_100000",
+    "family": "announced_lot_rules",
+    "settings": {
+      "initial_cash": 100000
+    },
+    "lot_revision": true
+  },
+  {
+    "name": "joint_adverse_100000",
+    "family": "joint_stress",
+    "settings": {
+      "initial_cash": 100000,
+      "participation": 0.05,
+      "slippage_bps": 20,
+      "impact_y": 0.5,
+      "minimum_commission": 10,
+      "fee_tax_rate": 0.09
+    },
+    "volume_multiplier": 0.5
+  },
+  {
+    "name": "participation_1pct_1000000",
+    "family": "participation",
+    "settings": {
+      "initial_cash": 1000000,
+      "participation": 0.01
+    }
+  },
+  {
+    "name": "participation_5pct_1000000",
+    "family": "participation",
+    "settings": {
+      "initial_cash": 1000000,
+      "participation": 0.05
+    }
+  },
+  {
+    "name": "volume_half_1000000",
+    "family": "volume",
+    "settings": {
+      "initial_cash": 1000000
+    },
+    "volume_multiplier": 0.5
+  },
+  {
+    "name": "life_1_1000000",
+    "family": "order_life",
+    "settings": {
+      "initial_cash": 1000000,
+      "max_order_sessions": 1
+    }
+  },
+  {
+    "name": "life_3_1000000",
+    "family": "order_life",
+    "settings": {
+      "initial_cash": 1000000,
+      "max_order_sessions": 3
+    }
+  },
+  {
+    "name": "lot1_1000000",
+    "family": "lot_diagnostic",
+    "settings": {
+      "initial_cash": 1000000,
+      "default_lot": 1
+    }
+  },
+  {
+    "name": "lot_revision_1000000",
+    "family": "announced_lot_rules",
+    "settings": {
+      "initial_cash": 1000000
+    },
+    "lot_revision": true
+  },
+  {
+    "name": "joint_adverse_1000000",
+    "family": "joint_stress",
+    "settings": {
+      "initial_cash": 1000000,
+      "participation": 0.05,
+      "slippage_bps": 20,
+      "impact_y": 0.5,
+      "minimum_commission": 10,
+      "fee_tax_rate": 0.09
+    },
+    "volume_multiplier": 0.5
+  },
+  {
+    "name": "minimum_0",
+    "family": "commission",
+    "settings": {
+      "minimum_commission": 0
+    }
+  },
+  {
+    "name": "minimum_1",
+    "family": "commission",
+    "settings": {
+      "minimum_commission": 1
+    }
+  },
+  {
+    "name": "minimum_10",
+    "family": "commission",
+    "settings": {
+      "minimum_commission": 10
+    }
+  },
+  {
+    "name": "slippage_0",
+    "family": "slippage",
+    "settings": {
+      "slippage_bps": 0
+    }
+  },
+  {
+    "name": "slippage_5",
+    "family": "slippage",
+    "settings": {
+      "slippage_bps": 5
+    }
+  },
+  {
+    "name": "slippage_20",
+    "family": "slippage",
+    "settings": {
+      "slippage_bps": 20
+    }
+  },
+  {
+    "name": "slippage_50",
+    "family": "slippage",
+    "settings": {
+      "slippage_bps": 50
+    }
+  },
+  {
+    "name": "impact_0.25",
+    "family": "impact",
+    "settings": {
+      "impact_y": 0.25
+    }
+  },
+  {
+    "name": "impact_0.5",
+    "family": "impact",
+    "settings": {
+      "impact_y": 0.5
+    }
+  },
+  {
+    "name": "impact_1",
+    "family": "impact",
+    "settings": {
+      "impact_y": 1
+    }
+  },
+  {
+    "name": "impact_0.5_1000000",
+    "family": "impact",
+    "settings": {
+      "initial_cash": 1000000,
+      "impact_y": 0.5
+    }
+  },
+  {
+    "name": "fee_tax_9pct",
+    "family": "tax_diagnostic",
+    "settings": {
+      "fee_tax_rate": 0.09
+    }
+  },
+  {
+    "name": "reserve_5pct",
+    "family": "cash_reserve",
+    "settings": {
+      "reserve_fraction": 0.05
+    }
+  },
+  {
+    "name": "settlement_T0",
+    "family": "settlement_diagnostic",
+    "settings": {
+      "settlement_sessions": 0
+    }
+  },
+  {
+    "name": "fresh_capital_25000",
+    "family": "fresh_capital",
+    "settings": {
+      "initial_cash": 25000
+    },
+    "fresh": true
+  },
+  {
+    "name": "fresh_capital_50000",
+    "family": "fresh_capital",
+    "settings": {
+      "initial_cash": 50000
+    },
+    "fresh": true
+  },
+  {
+    "name": "fresh_capital_100000",
+    "family": "fresh_capital",
+    "settings": {
+      "initial_cash": 100000
+    },
+    "fresh": true
+  },
+  {
+    "name": "fresh_capital_250000",
+    "family": "fresh_capital",
+    "settings": {
+      "initial_cash": 250000
+    },
+    "fresh": true
+  },
+  {
+    "name": "fresh_capital_500000",
+    "family": "fresh_capital",
+    "settings": {
+      "initial_cash": 500000
+    },
+    "fresh": true
+  },
+  {
+    "name": "fresh_capital_1000000",
+    "family": "fresh_capital",
+    "settings": {
+      "initial_cash": 1000000
+    },
+    "fresh": true
+  },
+  {
+    "name": "fresh_tick_rounding_100000",
+    "family": "tick_diagnostic",
+    "settings": {
+      "initial_cash": 100000
+    },
+    "fresh": true,
+    "tick_rounding": true
+  },
+  {
+    "name": "fresh_tick_rounding_1000000",
+    "family": "tick_diagnostic",
+    "settings": {
+      "initial_cash": 1000000
+    },
+    "fresh": true,
+    "tick_rounding": true
+  }
+]
