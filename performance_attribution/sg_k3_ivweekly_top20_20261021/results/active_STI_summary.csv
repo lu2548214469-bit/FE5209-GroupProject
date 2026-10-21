@@ -1,0 +1,5 @@
+window,active_cumulative_return,linked_stock_active_effect,cash_and_receivable_effect,reconciliation_error,method
+execution_eval,0.3216852650389461,0.4767237461662089,-0.155038481127252,1.0769163338864018e-14,actual beginning exposures versus broad STI return; benchmark-compounded active-wealth linking; not sector Brinson
+execution_live_continuous,-0.014382311894178816,-0.01505567812225233,0.0006733662280740884,5.759281940243e-16,actual beginning exposures versus broad STI return; benchmark-compounded active-wealth linking; not sector Brinson
+execution_whole,0.2501963347429994,0.3958148984185586,-0.1456185636755475,1.1657341758564144e-14,actual beginning exposures versus broad STI return; benchmark-compounded active-wealth linking; not sector Brinson
+fresh_live_close_to_close,-0.013515186182390428,-0.014928618057904956,0.0014134318755150497,5.204170427930421e-16,actual beginning exposures versus broad STI return; benchmark-compounded active-wealth linking; not sector Brinson

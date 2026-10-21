@@ -1,0 +1,38 @@
+[
+  {
+    "folder": "FE5209-SG-Top4-Backtest-publish",
+    "remote": "https://github.com/Sivan-Gan/FE5209-Multi-Factor-Strategy.git",
+    "head": "4faa7f25597fc4fbc62d9f153f4edf0194ef193e",
+    "refs": [
+      "origin/research/sg-single-factor-independent|0608b8e676a2109b46450782284c0bcab9a98d80|2026-10-21 14:18:37 +0800|feat: initialize independent SGX single-factor research",
+      "origin/Backtest-Framework-Top4|4faa7f25597fc4fbc62d9f153f4edf0194ef193e|2026-10-20 23:35:07 +0800|Freeze final Top4 backtest at SGD100k with source dividends paid after 14 days",
+      "origin/EricLu/sg-adaptive-top4|def5d53f0f545b99a528b9af72abfe5f1b8f1562|2026-10-20 10:23:18 +0800|最新数据格式",
+      "origin/feature/sg-independent-factor-research|2c56d5ab65f9af8a40a627f32f7e72ab6f0e70ef|2026-10-18 10:45:38 +0800|feat(sg): jointly neutralize factor scores by size and sector",
+      "origin/codex/us-performance-attribution|d7ff6c48e558fb57a509a6de598421275a814bd5|2026-10-15 23:56:41 +0800|feat: add reproducible US performance attribution",
+      "origin/formal-wrds-rebuild|3b969b86fc3af3192190b2783810c22049baf4da|2026-10-15 23:24:53 +0800|feat: add governed 2025-2026 cross-boundary bridge",
+      "origin/feature/adaptive-factor-strategy|39c0ce96efe1e5b24e59c2da666f8e36037d2fe3|2026-10-15 23:09:29 +0800|Add adaptive strategy reproducibility inputs",
+      "origin/member5-risk-analysis|7b48586e45b1c456478c8a977e96043bc3108dad|2026-10-14 17:14:47 +0800|M5: document reproducibility and add benchmark handoff artifacts",
+      "origin/EricLu/factor-returns|61eedb3630ddfc186b351f5496edf09b571565ff|2026-10-13 21:36:42 +0800|FROZEN GATE BC"
+    ]
+  },
+  {
+    "folder": "Cross-Market-Adaptive-Multi-Factor-Strategy-review",
+    "remote": "https://github.com/anminye/Cross-Market-Adaptive-Multi-Factor-Strategy.git",
+    "head": "487f45cbe065237795944f9083dc8d834af81719",
+    "refs": [
+      "origin/Backtest-Framework|42c2981ba905cc4574294ba0df5f679bb2901748|2026-10-20 10:49:56 +0800|Add SG backtest framework and detailed team onboarding",
+      "origin/Investability|5d6dadaed1b5ccbd45677cd4e28ed210bae59cfb|2026-10-18 15:56:35 +0800|Add zero-volume cross-checks and investability presentation Q&A",
+      "origin|487f45cbe065237795944f9083dc8d834af81719|2026-10-16 23:24:04 +0800|Add US data handoff documentation and QA reports",
+      "origin/main|487f45cbe065237795944f9083dc8d834af81719|2026-10-16 23:24:04 +0800|Add US data handoff documentation and QA reports"
+    ]
+  },
+  {
+    "folder": "FE5209-GroupProject-attribution-review",
+    "remote": "https://github.com/lu2548214469-bit/FE5209-GroupProject.git",
+    "head": "abf1c66ffd82b03c6183ff3546a5eb30749db934",
+    "refs": [
+      "origin|abf1c66ffd82b03c6183ff3546a5eb30749db934|2026-10-21 17:43:53 +0800|Final version: K3 / IV weekly / top 20%, factor tests, GUIDE",
+      "origin/main|abf1c66ffd82b03c6183ff3546a5eb30749db934|2026-10-21 17:43:53 +0800|Final version: K3 / IV weekly / top 20%, factor tests, GUIDE"
+    ]
+  }
+]

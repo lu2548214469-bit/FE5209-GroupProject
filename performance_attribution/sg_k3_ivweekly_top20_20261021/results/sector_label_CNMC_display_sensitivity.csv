@@ -1,0 +1,5 @@
+window,sector,source_group_pnl,illustration_reclass_CNMC_pnl,change_sgd,basis
+execution_eval,technology & communications,30441.486394634736,8147.925145435827,-22293.56124919891,display-only: move CNMC to other; no strategy rerun
+execution_eval,other,31808.33712013715,54101.89836933606,22293.56124919891,display-only: move CNMC to other; no strategy rerun
+fresh_live_close_to_close,technology & communications,-495.2101651999998,-492.5101683999998,2.6999967999999512,display-only: move CNMC to other; no strategy rerun
+fresh_live_close_to_close,other,-260.0243521999978,-262.72434899999774,-2.6999967999999512,display-only: move CNMC to other; no strategy rerun

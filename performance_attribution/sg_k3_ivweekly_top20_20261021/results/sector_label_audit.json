@@ -1,0 +1,14 @@
+{
+  "ticker": "5TP.SI",
+  "company_name": "CNMC Goldmine Holdings Limited",
+  "source_six_sector": "technology & communications",
+  "official_business": "gold exploration, mining and ore processing",
+  "provider_grouping_definition_verified": false,
+  "universe_vs_security_master_mismatched_stock_weeks": 0,
+  "official_sources": [
+    "https://www.cnmc.com.hk/about_us.html",
+    "https://investorrelations.sgx.com/news-releases/news-release-details/cnmc-goldmine-lists-catalist-expanding-sgx-commodities-resource"
+  ],
+  "implication": "source sector results describe original research groups; labels are not certified industry classes; original grouping affects source sector-neutral scores and portfolio caps if used upstream",
+  "display_reclassification_is_corrected_strategy_backtest": false
+}

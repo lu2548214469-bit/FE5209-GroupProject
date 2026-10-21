@@ -1,0 +1,81 @@
+{
+  "config": {
+    "name": "SG_Adaptive_K3_IVweekly_Top20",
+    "data": {
+      "universe": "data/sg_universe_weekly.csv.gz",
+      "benchmark": "data/sti_total_return_daily.csv"
+    },
+    "factors": {
+      "Quality": "quality_score",
+      "Momentum": "momentum_score",
+      "Low Risk": "low_risk_score",
+      "Investment": "investment_score",
+      "Size": "size_score",
+      "Value": "value_score"
+    },
+    "factor_returns": {
+      "leg_fraction": 0.3
+    },
+    "selection": {
+      "top_k": 3,
+      "lookback_years": 3,
+      "min_coverage": 0.65
+    },
+    "weighting": {
+      "method": "IV",
+      "window_weeks": 52,
+      "min_weight": 0.05,
+      "max_weight": 0.8,
+      "mv_shrinkage": 0.1,
+      "rebalance": "weekly"
+    },
+    "portfolio": {
+      "select_fraction": 0.2,
+      "exit_fraction": 0.3,
+      "sector_cap": 0.3,
+      "stock_weighting": "equal"
+    },
+    "costs": {
+      "one_way": 0.001,
+      "stress_one_way": 0.002
+    },
+    "periods": {
+      "backtest_start": "2016-01-01",
+      "pre": [
+        "2016-01-01",
+        "2018-12-31"
+      ],
+      "obs": [
+        "2019-01-01",
+        "2020-12-31"
+      ],
+      "eval": [
+        "2021-01-01",
+        "2026-09-18"
+      ],
+      "live": [
+        "2026-09-25",
+        "2026-10-09"
+      ]
+    },
+    "live_window": {
+      "trade_dates": [
+        "2026-10-01",
+        "2026-10-05",
+        "2026-10-12"
+      ],
+      "end": "2026-10-15",
+      "prices": "data/prices_daily.csv.gz"
+    },
+    "output_dir": "outputs"
+  },
+  "eval_trade_stats": {
+    "round_trips": 85,
+    "avg_holding_weeks": 59.870588235294115,
+    "trade_win_rate": 0.6823529411764706,
+    "avg_profit_per_trade": 0.3532438392666976
+  },
+  "weeks": 562,
+  "first_signal": "2016-01-08",
+  "last_signal": "2026-10-09"
+}

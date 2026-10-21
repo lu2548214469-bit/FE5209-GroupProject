@@ -1,0 +1,23 @@
+{
+  "strategy": "K3_IV_weekly_top20",
+  "source_commit": "abf1c66",
+  "source_files_unchanged": true,
+  "source_files_verified": 38,
+  "source_navigation_docs_may_change": true,
+  "workbook_checks": 18,
+  "workbook_required_checks_passed": true,
+  "workbook_exact_controls_passed": 17,
+  "workbook_benchmark_difference": 5.174163478706417e-06,
+  "workbook_warning": "STI return differs by about 0.000517 percentage point; retain discrepancy and use repository daily benchmark consistently",
+  "daily_FX_bridge_max_error": 1.2221335055073723e-12,
+  "synthetic_and_source_execution_tests_passed": 31,
+  "corporate_action_last_source_date": "2026-09-15",
+  "actual_October_dividend_absence_verified": false,
+  "source_weekly_return_currency": "listing currency; execution account converted to SGD",
+  "benchmark_sector_weights_available": false,
+  "Brinson_STI_allocation_selection_computed": false,
+  "Brinson_EW_universe_source_weekly_computed": true,
+  "incomplete_forward_weeks_not_attributed_after": "2026-09-18 signal",
+  "source_ranking_scope": "45 configurations in ranking book; selected configuration rank3 there, rank1 among final24",
+  "live_window_scope": "simulated execution, not verified broker transactions"
+}
