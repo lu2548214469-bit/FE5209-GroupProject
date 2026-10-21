@@ -62,4 +62,3 @@ text=re.sub(r'\n[ \t]+','\n',''.join(p.out))
 text=re.sub(r'\n{3,}','\n\n',text).strip()+'\n'
 (HERE/'REPORT_ZH.md').write_text(text,encoding='utf-8')
 print('Exported REPORT_ZH.md with',len(p.figures),'figures')
-

@@ -25,9 +25,9 @@
   },
   {
     "path": "export_markdown.py",
-    "bytes": 3271,
-    "sha256": "fbfca163b3449d82fec0f08ba4456d205826b9ff689c6caeeefd4546a732cf32",
-    "sha256_lf_normalized": "24d19b581888c14187202fec91fbd8bb33a4ca1ad79429588813504432142f64"
+    "bytes": 3333,
+    "sha256": "39b6a1cae33fa79333a4ba132139bb215944ee96359973ef015286a1686aa435",
+    "sha256_lf_normalized": "e71f8f8b5d47806a857f5b0a0d05fe74810b44164490f97ec5c2f44736e6256b"
   },
   {
     "path": "extra_diagnostics.py",
