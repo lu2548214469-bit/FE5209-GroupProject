@@ -1,8 +1,12 @@
 # SG Adaptive Multi-Factor Strategy
 
 FE5209 Financial Econometrics group project. A long-only weekly stock-selection strategy on
-Singapore-listed equities. Each year it chooses the four style factors with the best recent
-risk-adjusted performance, combines their scores, and holds the top-ranked stocks.
+Singapore-listed equities. Each year it picks the three style factors with the best recent
+risk-adjusted performance. It weights them by inverse volatility, re-estimated every week, and holds
+the top 20% of stocks by the combined score.
+
+**New to the project? Start with [GUIDE.md](GUIDE.md)**. It covers setup in a fresh environment,
+every command, what each one prints and the conclusion to draw from it.
 
 ## Quick start
 
@@ -13,86 +17,105 @@ pip install -r requirements.txt
 python run_backtest.py
 ```
 
-The run takes about 25 seconds. It reads `data/` and writes all results to `outputs/SG_Adaptive_Top4/`.
-Nothing needs downloading and no test code is run. It has two parts:
+The run takes about 30 seconds. It reads `data/` and writes all results to
+`outputs/SG_Adaptive_K3_IVweekly_Top20/`. Nothing needs downloading and no test code runs.
 
-- **Part A: strategy and weekly backtest.** Builds the weekly target weights and a weekly NAV net of
-  10 bp per side, then computes the live window (first trade 2026-10-01) with a daily NAV.
-- **Part B: daily execution account** (`src/sgfactor/live/`). Trades the same targets from SGD 100,000 in cash
-  starting in January 2021, with:
-  - board lots;
-  - minimum commissions and fees;
-  - volume limits;
-  - T+2 settlement;
-  - dividends.
+## Research pipeline
 
-  It also converts USD and EUR listings to SGD. It runs from 2021 through the live window and is the
-  headline result. Use `--skip-execution` to run Part A only.
+```
+data/ (provider panel, cleaned)
+  -> factors      six style scores -> weekly top-30% minus bottom-30% factor returns
+  -> strategy     yearly selection of 3 styles -> weekly inverse-volatility weights -> composite score
+                  -> top 20% holdings (buffer, sector cap) -> weekly target weights
+  -> backtest     Part A: weekly NAV net of costs, metrics by period, live-window daily NAV
+  -> live         Part B: daily execution account (board lots, fees, volume caps, T+2, dividends, FX)
+  -> outputs/     course performance metrics (09_performance_metrics.csv) and all intermediate tables
+tests/ (run separately)
+  factor_tests    which factors work, 2011-2015
+  strategy_tests  which configuration to use, 2016-2020   -> chose K3 / IV weekly / top 20%
+  execution_tests is the execution engine correct
+```
 
 ## Repository layout
 
 ```
-run_backtest.py              main entry: historical backtest of the frozen strategy
-config/strategy.yaml         frozen configuration (single source of truth)
+GUIDE.md                     step-by-step guide: environment, commands, expected results
+run_backtest.py              main entry: frozen strategy -> weekly backtest -> execution account -> metrics
+config/strategy.yaml         frozen strategy configuration (single source of truth)
+config/execution.yaml        frozen execution settings FINAL_100K_DIV14_V1
 data/                        clean data package (see data/README.md)
 src/sgfactor/
   data.py                    reads data/
   factors/                   style scores -> weekly long-short factor returns
   strategy/                  yearly style selection, style weights, composite score, holdings
-  backtest/                  weekly NAV with drift and costs, metrics, summary tables
+  backtest/                  weekly NAV with drift and costs, metrics, summary tables, live window
   live/                      daily execution account (engine by fangling, Backtest-Framework-Top4)
-config/execution.yaml        frozen execution settings FINAL_100K_DIV14_V1
+                             + report.py: course performance metrics
 tests/
-  strategy_tests/            controlled-variable comparison + integrity checks
+  run_all_tests.py           all three test stages in order
+  factor_tests/              single-factor tests 2011-15 (Ganjunhui, research/sg-single-factor-independent)
+  strategy_tests/            configuration selection 2016-20 (24 configurations, no look-ahead)
   execution_tests/           execution engine tests + reproduction of the frozen final run
-  factor_tests/              factor tests (to be added)
 scripts/build_clean_data.py  how data/ was built from the provider's raw files
 ```
 
-## The strategy
+## The strategy (frozen in `config/strategy.yaml`)
 
 | Step | Rule |
 |---|---|
-| Universe | Weekly. SGX stocks that are price-eligible and have all six style scores |
+| Universe | Weekly. SGX stocks that are price-eligible and have all six style scores (96 stocks ever eligible) |
 | Style scores | Quality, Momentum (12-1), Low Risk, Investment, Size (small cap), Value. Supplied by the data team, standardised, higher = more favoured |
 | Factor returns | Each week: top 30% minus bottom 30% by score, equal weight |
-| Style selection | First signal week of each year: rank styles by mean / std of the last 3 years of completed weekly factor returns, keep the top 4 |
-| Style weights | Inverse volatility over the last 52 weeks, bounded to 5%–80%; re-estimated yearly by default (`weighting.rebalance`: yearly / monthly / weekly) |
-| Composite score | Weighted sum of the four selected style scores |
-| Holdings | Top 20% by composite score, equal weight (about 16 names). Buffer: a holding is kept while it stays in the top 30%. At most 30% of names in one sector |
+| Style selection | First signal week of each year: rank styles by mean / std of the last 3 years of completed weekly factor returns. Keep the top **3** |
+| Style weights | Inverse volatility over the last 52 weeks, bounded to 5%–80%, **re-estimated every week** |
+| Composite score | Weighted sum of the three selected style scores |
+| Holdings | Top **20%** by composite score, equal weight (about 14–18 names). A holding is kept while it stays in the top 30% (buffer). At most 30% of names in one sector |
 | Timing | Signal on Friday close; trade at the next trading day's close; hold one week |
-| Costs | 10 bp one-way on turnover (20 bp also reported) |
+| Costs | 10 bp one-way on turnover in Part A (20 bp also reported). Full fee schedule in Part B |
 
 Only information available at each decision date is used: selection and weights use factor
 returns whose holding period has already ended.
+
+**Why this configuration.** `tests/strategy_tests` compares 24 configurations using 2016–2020 data only:
+- K 3 or 4;
+- style weights EW, or IV re-estimated yearly, monthly or weekly;
+- top 20%, 25% or 30%.
+
+This one ranks first on 2016–20 Sharpe: 0.94, with Calmar 0.42. Three styles beat four in every
+matched pair; the median Sharpe is 0.87 for K3 against 0.75 for K4. Against the STI, the Newey-West t of the active
+return is 1.71, and the block-bootstrap p-value that its Sharpe is no higher than the STI's is 0.046. The configuration was frozen before looking at any later
+data.
 
 ## Periods
 
 | Period | Signal dates | Use |
 |---|---|---|
-| Pre | 2016-01 .. 2018-12 | robustness only |
-| OBS (observation) | 2019-01 .. 2020-12 | choosing the configuration |
-| EVAL (evaluation) | 2021-01 .. 2026-09-18 (last holding ends 2026-09-28) | reported once, never used to choose |
-| Live | trades at the close of 2026-10-01, 10-05 and 10-12, using the latest weekly signal before each (09-25, 10-02, 10-09); daily NAV to 2026-10-15 | live window |
+| Factor tests | 2011 .. 2015 | which factors carry a premium (tests/factor_tests) |
+| Pre | 2016-01 .. 2018-12 | configuration selection (with OBS) |
+| OBS (observation) | 2019-01 .. 2020-12 | configuration selection |
+| EVAL (evaluation) | 2021-01 .. 2026-09-18 (last holding ends 2026-09-28) | out-of-sample, reported once, never used to choose |
+| TEST / live | trades at the close of 2026-10-01, 10-05 and 10-12, using the latest weekly signal before each (09-25, 10-02, 10-09); marked daily to 2026-10-15 | course test period |
 
-## Results (`python run_backtest.py`, net of 10 bp, risk-free rate 0)
+The data end on 2026-10-15; there are no prices for 2026-10-16.
+
+## Results
+
+### Part A: weekly backtest, net of 10 bp, risk-free rate 0
 
 | | Annual return | Volatility | Sharpe | Max drawdown | Calmar |
 |---|---|---|---|---|---|
-| OBS 2019–20: strategy | 18.4% | 22.0% | 0.88 | 33.4% | 0.55 |
+| OBS 2019–20: strategy | 22.9% | 22.7% | 1.02 | 35.2% | 0.65 |
 | OBS 2019–20: STI | 2.2% | 20.5% | 0.21 | 32.1% | 0.07 |
-| EVAL 2021-01..2026-09: strategy | 25.0% | 15.0% | 1.57 | 11.6% | 2.16 |
+| EVAL 2021-01..2026-09: strategy | 24.5% | 16.6% | 1.41 | 12.3% | 1.99 |
 | EVAL 2021-01..2026-09: STI | 17.3% | 12.2% | 1.37 | 10.5% | 1.65 |
 | EVAL 2021-01..2026-09: equal-weight universe | 12.1% | 12.0% | 1.02 | 16.7% | 0.73 |
 
-Live window, 2026-10-01 close to 2026-10-15 (10 trading days):
-- Strategy: −5.9%.
+Live window, daily NAV from the 2026-10-01 close to 2026-10-15:
+- Strategy: −6.2%.
 - STI: −4.7%.
 - Equal-weight universe: −4.8%.
 
-Two weeks is too short to draw conclusions.
-
-### Daily execution account (Part B, headline result)
+### Part B: daily execution account (headline result)
 
 Setting `FINAL_100K_DIV14_V1`, frozen by the group on 2026-10-20 (see `config/execution.yaml`):
 
@@ -105,26 +128,40 @@ Setting `FINAL_100K_DIV14_V1`, frozen by the group on 2026-10-20 (see `config/ex
 | Costs | commission 5 bp (minimum SGD 5) + market fees 4 bp + slippage 10 bp |
 | Settlement | T+2 |
 | Dividends | source cash dividends, paid 14 calendar days after the ex-date (an assumption) |
-| Currency | USD / EUR listings (e.g. T14, DCRU) converted to SGD with daily FX |
+| Currency | USD / EUR listings converted to SGD with daily FX |
 
-| | Strategy account | STI total return, same dates |
+Course performance metrics (`09_performance_metrics.csv`):
+
+| Metric | TEST 2026-10-01 close .. 10-15 | EVAL 2021-01 .. 2026-09 (reference) |
 |---|---|---|
-| EVAL 2021-01-08 .. 2026-09-30: SGD 100,000 grows to | 297,716 | |
-| EVAL CAGR | 21.0% | 17.6% |
-| EVAL max drawdown | 12.7% | 14.5% |
-| EVAL Sharpe (daily, rf 0) | 1.53 | |
-| LIVE 2026-10-01 close .. 2026-10-15 | 295,950 → 278,856, −5.8% | −4.7% |
+| NAV, SGD | 283,634 → 266,334 | 100,000 → 285,647 |
+| Cumulative return (STI) | −6.10% (−4.66%) | +185.6% (+153.5%) |
+| Annual return (STI) | −79.5% (−70.0%); annualised from 10 days | 20.2% (17.7%) |
+| Annual volatility | 19.8% | 14.3% |
+| Sharpe ratio, rf 0 (STI) | −7.88 (−5.97) | 1.36 (1.49) |
+| Max drawdown (STI) | 6.8% (5.3%) | 14.4% (14.5%) |
+| Drawdown patterns: count / longest | 2 / 6 days | 53 / 663 days |
+| Win rate (position trades) | 11.1% (2 of 18) | 65.5% |
+| Number of trades (fills: buys / sells) | 47 (32 / 15) | 5,357 (3,380 / 1,977) |
+| Position trades | 18 | 84 |
+| Average holding period | 10 days (whole window) | 293 trading days |
+| Profit per trade (position trade), SGD | −961 | 2,210 |
+| Sortino / Calmar | −5.93 / −11.77 | 1.33 / 1.41 |
+| Fees / slippage / dividends, SGD | 244 / 21 / 0 | 27,937 / 2,780 / 46,269 |
 
-Breakdown for the whole account:
-- Dividends received: SGD 48,318.
-- Fees: SGD 27,405.
-- Slippage: SGD 2,947.
-- Share of requested order value that was filled: 97.7%.
+Definitions are in `src/sgfactor/live/report.py`. Notes on two of them:
+- **Number of trades** counts every execution. The account trims and tops up weights every week,
+  so there are many more fills than position trades.
+- **Position trade.** A position trade lasts from the day a stock is first held until it is fully
+  sold, and its profit includes fees and dividends. Positions open at a window edge are cut at that
+  edge.
+
+Ten trading days are far too short to judge the strategy.
 
 The engine port was checked against fangling's own run on the earlier 74-stock panel. Both
 produced 3,525 fills and an ending NAV of SGD 328,755.
 
-## Output files (`outputs/SG_Adaptive_Top4/`)
+## Output files (`outputs/SG_Adaptive_K3_IVweekly_Top20/`)
 
 | File | Content |
 |---|---|
@@ -132,70 +169,49 @@ produced 3,525 fills and an ending NAV of SGD 328,755.
 | `02_annual_style_decisions.csv` | styles chosen each year, their weights and selection scores |
 | `03_target_holdings_weekly.csv` | weekly holdings with rank, sector and status (new / kept / kept by buffer) |
 | `target_weights.csv` | `signal_date, execution_date, ticker, weight`: input for the execution framework |
-| `04_trade_ledger.csv` | every buy and sell at each rebalance |
+| `04_trade_ledger.csv` | every buy and sell at each weekly rebalance |
 | `05_weekly_returns.csv` | strategy (net, 20 bp stress, gross), STI, equal-weight universe |
-| `06_performance_summary.csv` | metrics by period |
+| `06_performance_summary.csv` | Part A metrics by period |
 | `07_calendar_year_returns.csv` | returns by calendar year |
-| `08_live_daily_nav.csv`, `08_live_summary.csv`, `08_live_holdings.csv` | live window: daily NAV (strategy, 20 bp stress, equal-weight universe, STI), summary, holdings at each live trade |
-| `run_manifest.json` | configuration used and trade statistics |
-| `EXECUTION_SUMMARY.json` | **daily execution account: headline result** |
+| `08_live_daily_nav.csv`, `08_live_summary.csv`, `08_live_holdings.csv` | live window (Part A): daily NAV, summary, holdings at each live trade |
+| `09_performance_metrics.csv` | **course performance metrics**, TEST period and EVAL reference (Part B) |
+| `10_portfolio_assets.csv`, `10_portfolio_daily_close.csv` | **course deliverable**: assets in the test-period portfolio and their daily closing prices (listing currency) |
+| `EXECUTION_SUMMARY.json` | daily execution account summary (EVAL and LIVE) |
 | `execution/daily.csv` | daily NAV, cash, receivables, P&L, dividends, fees |
 | `execution/holdings.csv`, `orders.csv`, `fills.csv`, `attempts.csv` | shares held, orders, fills, reasons for unfilled orders |
 | `execution/dividends.csv`, `events.csv` | dividend events used (with assumed pay dates) and cash settlements |
-| `execution/contributions.csv`, `risk.csv`, `audit.json` | per-stock contribution, concentration, accounting checks |
+| `execution/contributions.csv`, `risk.csv`, `audit.json` | per-stock daily contribution, concentration, accounting checks |
+| `run_manifest.json` | configuration used and trade statistics |
 
 ## Tests (run separately)
 
 ```bash
-python tests/strategy_tests/run_strategy_tests.py      # 45 configurations, 2016-20 only, about 4 minutes
-python tests/execution_tests/run_execution_tests.py    # 31 tests, about 25 seconds
-python tests/factor_tests/run_factor_tests.py          # placeholder
+python tests/run_all_tests.py                          # all three below in order, about 4 minutes
+python tests/factor_tests/run_factor_tests.py          # single-factor tests 2011-15, about 1-2 minutes
+python tests/strategy_tests/run_strategy_tests.py      # 24 configurations, 2016-20 only, about 2 minutes
+python tests/execution_tests/run_execution_tests.py    # 31 tests, about 30 seconds
 ```
 
-The strategy test chooses a configuration using 2016–2020 data only, which is the configuration-selection period. Nothing after 2020 is printed or used.
-
-It runs a full grid with no baseline: K 3/4/5 × style weights (EW; IV re-estimated yearly, monthly or weekly; MV) × top 20/25/30%, with a 3-year lookback. That gives 45 configurations. Configurations are ranked by 2016–20 Sharpe, with Calmar breaking ties.
-
-The report has seven parts:
-1. one matrix per K for each metric;
-2. the full ranking;
-3. the median effect of each setting;
-4. how stable the ranking is when costs rise to 20 and 30 bp, and how the top configuration's neighbours rank;
-5. the top configuration against the STI and the equal-weight universe (Newey-West t and bootstrap p);
-6. turnover;
-7. integrity checks: no look-ahead, weights and the sector cap.
-
-Output files, in `outputs/strategy_tests/`:
-- `selection_report.txt`
-- `selection_ranking_2016_20.csv`
-- `selection_significance.csv`
-- `selection_turnover_top10.csv`
-- `checks.csv`
-
-The execution tests are fangling's 30 synthetic-data tests of the engine. They cover accounting,
-lots and fees, settlement, corporate actions and look-ahead. There is also one check that the
-real-data run reproduces the frozen account.
+What each one prints and how to read it: see [GUIDE.md](GUIDE.md) and [tests/README.md](tests/README.md).
 
 ## Limitations
 
 - **Survivorship bias.** The data cover the 114 stocks listed today, so history before the live
   window excludes companies that later delisted.
 - **Missing fundamentals.** 96 of the 114 stocks ever enter the universe. The other 18 have no
-  fundamental data in the source (e.g. SIA, Jardine C&C, Great Eastern), so they lack Quality,
-  Investment, Size and Value scores.
+  fundamental data in the source (e.g. SIA, Jardine C&C, Great Eastern).
 - **Local-currency weekly returns.** In Part A, the weekly returns of USD and EUR listings are in
   their own currency. Part B converts them to SGD.
 - **Not point-in-time.** Fundamentals behind Quality, Investment and Value are not strictly
   point-in-time, and Size and Value use a market-cap proxy.
-- **Simplified execution in the weekly backtest.** Part A ignores board lots, minimum commissions and
-  liquidity limits. Part B models them, but only as a close-price proxy: zero-volume days are
-  assumed to be data gaps, and fills are capped by that day's realised volume.
-- **Unverified dividend data.** Dividend pay dates, currency and tax treatment are assumed, and the
-  vendor's share basis has not been verified. The audit file labels the result
-  `SOURCE_DIVIDEND_14D_ESTIMATE_UNVERIFIED_PRICE_SHARE_BASIS`.
-- **Risk-free rate.** Sharpe ratios use a risk-free rate of 0, because the package has no SGD
-  risk-free rate series.
-- **Hindsight.** The evaluation period had been looked at before the configuration was frozen.
+- **Close-price proxy.** Part B models lots, fees and liquidity, but fills are at the close and
+  zero-volume days are treated as data gaps.
+- **Unverified dividend data.** Dividend pay dates, currency and tax treatment are assumed. The
+  audit file labels the result `SOURCE_DIVIDEND_14D_ESTIMATE_UNVERIFIED_PRICE_SHARE_BASIS`.
+- **Risk-free rate.** Sharpe ratios use a risk-free rate of 0, because there is no SGD risk-free
+  series in the package.
+- **Short test period.** The course test window is 10 trading days, so its annualised figures are
+  not meaningful.
 
 ## Data licence
 

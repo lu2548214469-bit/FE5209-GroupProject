@@ -2,8 +2,9 @@
 
 History: with the earlier 74-stock panel this project reproduced fangling's own frozen run
 FINAL_100K_DIV14_V1 exactly (ending NAV SGD 328,755.16, 3,525 fills; commit 8b486d7). The
-reference below is the same engine and settings on the final FX-complete panel, run through the
-live window (first live trade 2026-10-01, last mark 2026-10-15).
+reference below is the same engine and settings on the final FX-complete panel with the frozen
+strategy (K3, IV re-estimated weekly, top 20%), run through the live window (first live trade
+2026-10-01, last mark 2026-10-15).
 """
 import sys
 import unittest
@@ -18,9 +19,9 @@ from sgfactor.config import load_config                        # noqa: E402
 from sgfactor.data import load_benchmark                       # noqa: E402
 from sgfactor.live import run_execution                        # noqa: E402
 
-REFERENCE = dict(fills=5231, orders=4309, incomplete_orders=83, source_cash_events=466,
-                 last_mark="2026-10-15", ending_nav=278856.26, dividend_income=48317.57,
-                 total_fees=27404.90, eval_end_nav=297716.50)
+REFERENCE = dict(fills=5418, orders=4316, incomplete_orders=90, source_cash_events=476,
+                 last_mark="2026-10-15", ending_nav=266334.30, dividend_income=46268.76,
+                 total_fees=28254.16, eval_end_nav=285647.38)
 
 
 class ReproduceFrozenAccount(unittest.TestCase):

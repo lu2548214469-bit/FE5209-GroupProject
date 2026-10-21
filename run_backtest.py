@@ -1,4 +1,4 @@
-"""Run the main strategy (SG Adaptive Top-4) on the historical data and write the results.
+"""Run the main strategy (SG Adaptive K3, IV weekly, top 20%) on the historical data and write the results.
 
     python run_backtest.py                       # strategy + daily execution account
     python run_backtest.py --skip-execution      # strategy and weekly backtest only (~15 s)
@@ -31,6 +31,7 @@ from sgfactor.backtest.report import live_table, period_mask, summary_table, yea
 from sgfactor.config import load_config, resolve                                # noqa: E402
 from sgfactor.data import benchmark_weekly, load_benchmark, load_universe        # noqa: E402
 from sgfactor.live import run_execution                                         # noqa: E402
+from sgfactor.live.report import course_metrics, metrics_table, portfolio_prices  # noqa: E402
 from sgfactor.strategy import run_strategy                                      # noqa: E402
 
 
@@ -139,6 +140,25 @@ def main() -> None:
               f"return {l_['cum_return']:.2%}   | STI {l_['sti_cum_return']:.2%}")
         print(f"  whole account: dividends SGD {s['dividend_income']:,.0f}, fees SGD {s['total_fees']:,.0f}, "
               f"slippage SGD {s['proxy_slippage_cost']:,.0f}, order value completed {s['requested_value_completion']:.1%}")
+
+        # course performance metrics: test period (live) and, for reference, the evaluation period
+        live_start, live_end = cfg["live_window"]["trade_dates"][0], ecfg["end"]
+        first = pd.Timestamp(ex["daily"]["date"].iloc[0]) - pd.Timedelta(days=1)
+        M = metrics_table({
+            "TEST (live) 2026-10": course_metrics(ex, live_start, live_end, sti_levels),
+            "EVAL 2021-01..2026-09 (reference)": course_metrics(ex, str(first.date()), ecfg["eval_end"], sti_levels)})
+        M.to_csv(out / "09_performance_metrics.csv")
+        lt = ex["targets"][pd.to_datetime(ex["targets"]["execution_date"]) >= live_start]
+        master = pd.read_csv(resolve(ecfg["data"]["security_master"])).set_index("ticker")
+        assets = master.reindex(sorted(lt["ticker"].unique()))[["company_name", "currency", "six_sector"]]
+        assets.index.name = "ticker"
+        assets.to_csv(out / "10_portfolio_assets.csv")
+        portfolio_prices(lt, resolve(ecfg["data"]["prices"]), "2025-10-01", live_end).to_csv(out / "10_portfolio_daily_close.csv")
+        print("\nCourse performance metrics (execution account; 09_performance_metrics.csv):")
+        show = M.copy()
+        for col in show.columns:
+            show[col] = [f"{v:,.4f}" if isinstance(v, float) else v for v in show[col]]
+        print(show.to_string())
     print(f"\nOutputs in {out}  ({time.time() - t0:.0f} s)")
 
 

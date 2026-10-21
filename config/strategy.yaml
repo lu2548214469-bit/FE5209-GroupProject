@@ -1,7 +1,8 @@
-# Frozen configuration of the main strategy: SG Adaptive Top-4.
+# Frozen configuration of the main strategy: SG Adaptive K3, IV re-estimated weekly, top 20%.
+# Chosen by tests/strategy_tests (rank 1 of 24 on 2016-2020 Sharpe).
 # Single source of truth: run_backtest.py and the tests read their settings from here.
 
-name: SG_Adaptive_Top4
+name: SG_Adaptive_K3_IVweekly_Top20
 
 data:
   universe: data/sg_universe_weekly.csv.gz       # cleaned weekly panel (see data/README.md)
@@ -19,7 +20,7 @@ factor_returns:
   leg_fraction: 0.30                             # long top 30% minus short bottom 30%, equal weight
 
 selection:                                       # re-run on the first signal week of every year
-  top_k: 4
+  top_k: 3
   lookback_years: 3                              # rank styles by mean / std of weekly factor returns
   min_coverage: 0.65                             # style needs >= 65% of lookback weeks to be eligible
 
@@ -29,7 +30,7 @@ weighting:
   min_weight: 0.05
   max_weight: 0.80
   mv_shrinkage: 0.10
-  rebalance: yearly                              # when style weights are re-estimated: yearly | monthly | weekly
+  rebalance: weekly                              # when style weights are re-estimated: yearly | monthly | weekly
 
 portfolio:
   select_fraction: 0.20                          # buy the top 20% by composite score

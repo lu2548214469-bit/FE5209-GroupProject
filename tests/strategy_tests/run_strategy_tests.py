@@ -1,21 +1,20 @@
 """Strategy selection test: which configuration is best on 2016-2020 data?
 
-    python tests/strategy_tests/run_strategy_tests.py        # about 4 minutes
+    python tests/strategy_tests/run_strategy_tests.py        # about 2 minutes
 
 Only the selection period 2016-01 .. 2020-12 is used and reported (signal dates; split into
 2016-18 and 2019-20 as well). Nothing after 2020 is printed or used to rank.
 
 Grid, no baseline: every combination of
-    K         styles selected each year      3, 4, 5
+    K         styles selected each year      3, 4
     weights   how the selected styles are weighted, and how often the weights are re-estimated
               EW          equal weight
               IV_yearly   inverse volatility, re-estimated once a year (with the style selection)
               IV_monthly  inverse volatility, re-estimated at the first signal week of each month
               IV_weekly   inverse volatility, re-estimated every week
-              MV          minimum variance, re-estimated once a year
     top       share of the universe held     20, 25, 30 %   (buffer exit line = top + 10 pp)
-= 45 configurations. Fixed for all: 3-year lookback for the yearly style selection, 52-week window
-and 5-80% bounds for IV / MV, 30% sector cap, small-cap Size, weekly stock rebalance, 10 bp one-way
+= 24 configurations. Fixed for all: 3-year lookback for the yearly style selection, 52-week window
+and 5-80% bounds for IV, 30% sector cap, small-cap Size, weekly stock rebalance, 10 bp one-way
 cost, risk-free rate 0.
 
 Ranking rule: 2016-20 Sharpe, ties broken by 2016-20 Calmar.
@@ -53,8 +52,8 @@ from sgfactor.strategy import select_styles                         # noqa: E402
 
 LOOKBACK = 3
 WEIGHTS = {"EW": ("EW", "yearly"), "IV_yearly": ("IV", "yearly"), "IV_monthly": ("IV", "monthly"),
-           "IV_weekly": ("IV", "weekly"), "MV": ("MV", "yearly")}
-GRID = {"K": [3, 4, 5], "weights": list(WEIGHTS), "top": [0.20, 0.25, 0.30]}
+           "IV_weekly": ("IV", "weekly")}
+GRID = {"K": [3, 4], "weights": list(WEIGHTS), "top": [0.20, 0.25, 0.30]}
 PERIODS = {"2016_20": ("2016-01-01", "2020-12-31"), "2016_18": ("2016-01-01", "2018-12-31"),
            "2019_20": ("2019-01-01", "2020-12-31")}
 SEL = PERIODS["2016_20"]

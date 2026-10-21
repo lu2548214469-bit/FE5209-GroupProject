@@ -66,3 +66,18 @@ Where these come from:
 Notes on use:
 - Prices are split-adjusted, so split events are not applied a second time.
 - Cash dividends are paid in the account 14 calendar days after the ex-date. This is the group's assumption, not a verified pay date.
+
+## `factor_test_panel.csv.gz`: input for the single-factor tests
+
+This file holds all 103,573 rows of the final panel, 2006–2026, unfiltered. It has these columns:
+- `ticker`
+- `signal_date`, `execution_date`, `next_execution_date`
+- `forward_return`
+- `price_eligible`
+- `six_sector`
+- the six `*_score` columns
+
+The values are copied exactly as text. That way the factor tests reproduce the frozen results of the
+`research/sg-single-factor-independent` branch exactly.
+
+`price_eligible` is kept here because the tests compare the price-eligible sample with all stocks.
