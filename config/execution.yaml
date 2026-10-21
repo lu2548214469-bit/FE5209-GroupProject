@@ -1,6 +1,7 @@
 # Daily execution (account-level) backtest: the group's frozen setting FINAL_100K_DIV14_V1
 # (fangling, 2026-10-20). Replays the strategy's weekly target weights through a daily share-and-cash
-# account. Do not change these after seeing results.
+# account, from the first evaluation signal through the live window. Do not change these after
+# seeing results.
 
 release: FINAL_100K_DIV14_V1
 
@@ -9,10 +10,13 @@ data:
   sessions: data/trading_sessions.csv          # proxy SGX trading calendar
   security_master: data/security_master.csv    # trading currency must be SGD
   corporate_actions: data/corporate_actions.csv
+  fx: data/fx_daily.csv                        # SGD per USD / EUR for non-SGD listings
 
 start: "2021-01-01"            # account starts in cash at the first evaluation signal (cash reset)
-end: "2026-09-30"              # last holding must end by this date AND inside the daily price data
+eval_end: "2026-09-30"         # EVAL is reported up to this day; LIVE from the first live trade close
+end: "2026-10-15"              # last marking day = last day with daily prices (end of the live window)
 price_history_from: "2020-09-01"   # warm-up for the 20-day ADV
+settlement_calendar_extension: ["2026-10-16", "2026-10-19"]   # calendar-only days for T+2 of the last trades
 
 settings:                      # ExecutionConfig (live/engine.py)
   initial_cash: 100000         # SGD

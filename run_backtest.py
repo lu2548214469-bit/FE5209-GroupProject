@@ -6,10 +6,12 @@
 
 Part A  strategy + weekly backtest: clean universe -> style long-short returns -> yearly style
         selection and weights -> weekly composite score -> target weights -> weekly NAV with
-        10 bp costs -> metrics vs STI, by period.
+        10 bp costs -> metrics vs STI for PRE / OBS / EVAL; then the LIVE window (first trade
+        2026-10-01) with a daily NAV.
 Part B  daily execution account (src/sgfactor/live, config/execution.yaml): the same target
-        weights traded from SGD 100,000 cash in 2021 with board lots, minimum fees, volume
-        limits, T+2 settlement and dividends. This is the headline "real-money" result.
+        weights traded from SGD 100,000 cash in 2021 through the live window, with board lots,
+        minimum fees, volume limits, T+2 settlement, dividends and FX for non-SGD listings.
+        This is the headline "real-money" result.
 """
 from __future__ import annotations
 
@@ -24,7 +26,8 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 
 from sgfactor.backtest import net_returns, trade_stats, weekly_backtest          # noqa: E402
-from sgfactor.backtest.report import period_mask, summary_table, yearly_table   # noqa: E402
+from sgfactor.backtest.live_window import live_window                            # noqa: E402
+from sgfactor.backtest.report import live_table, period_mask, summary_table, yearly_table  # noqa: E402
 from sgfactor.config import load_config, resolve                                # noqa: E402
 from sgfactor.data import benchmark_weekly, load_benchmark, load_universe        # noqa: E402
 from sgfactor.live import run_execution                                         # noqa: E402
@@ -51,6 +54,16 @@ def backtest(cfg: dict, universe: pd.DataFrame | None = None, fret: pd.DataFrame
     return res
 
 
+def execution_targets(res: dict, live: dict, cfg: dict) -> pd.DataFrame:
+    """Evaluation targets on their weekly execution dates, then live targets on the live trade dates."""
+    h = res["holdings"]
+    ev = h[(h.signal_date >= cfg["periods"]["eval"][0]) & (h.signal_date <= cfg["periods"]["eval"][1])]
+    ev = ev[["signal_date", "execution_date", "ticker", "weight"]]
+    lv = live["holdings"].rename(columns={"trade_date": "execution_date"})
+    lv["signal_date"] = lv["execution_date"].map({t: s for s, t in live["schedule"]})
+    return pd.concat([ev, lv[["signal_date", "execution_date", "ticker", "weight"]]], ignore_index=True)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--config", default=None)
@@ -70,6 +83,9 @@ def main() -> None:
     ev = period_mask(W.index, cfg["periods"]["eval"])
     trades = trade_stats(res["holdings"][res["holdings"]["signal_date"].isin(W.index[ev])],
                          res["universe"], cfg["costs"]["one_way"])
+    sti_levels = load_benchmark(cfg)
+    live = live_window(res["holdings"], res["universe"], sti_levels, cfg)
+    live_summary = live_table(live["nav"])
 
     res["factor_returns"].to_csv(out / "01_factor_returns_weekly.csv", index=False)
     res["decisions"].to_csv(out / "02_annual_style_decisions.csv", index=False)
@@ -80,6 +96,9 @@ def main() -> None:
     W.to_csv(out / "05_weekly_returns.csv")
     summary.to_csv(out / "06_performance_summary.csv", index=False)
     yearly_table(W, series).to_csv(out / "07_calendar_year_returns.csv")
+    live["nav"].to_csv(out / "08_live_daily_nav.csv")
+    live["holdings"].to_csv(out / "08_live_holdings.csv", index=False)
+    live_summary.to_csv(out / "08_live_summary.csv", index=False)
     with open(out / "run_manifest.json", "w") as f:
         json.dump({"config": cfg, "eval_trade_stats": trades, "weeks": len(W),
                    "first_signal": W.index[0], "last_signal": W.index[-1]}, f, indent=2)
@@ -92,12 +111,15 @@ def main() -> None:
     print("\nStyles chosen each year:")
     print(res["decisions"][["year", "selected"]].to_string(index=False))
     print(f"\nEVAL trades: {trades}")
+    sched = ", ".join(f"{t} (signal {s_})" for s_, t in live["schedule"])
+    print(f"\nLIVE window, daily NAV, trades at the close of {sched}:")
+    print(live_summary[["series", "from", "to", "trading_days", "cum_return", "max_drawdown"]].round(4)
+          .to_string(index=False))
     if not a.skip_execution:
         print("\nPart B: daily execution account (board lots, fees, volume caps, T+2, dividends) ...")
         ecfg = load_config(a.execution_config)
-        cal = res["path"].reset_index()[["signal_date", "next_execution_date"]]
-        ex = run_execution(res["holdings"][["signal_date", "execution_date", "ticker", "weight"]], cal, ecfg,
-                           load_benchmark(cfg))
+        ex = run_execution(execution_targets(res, live, cfg), ecfg, ecfg["eval_end"],
+                           cfg["live_window"]["trade_dates"][0], sti_levels)
         d = out / "execution"
         d.mkdir(exist_ok=True)
         for key in ("daily", "holdings", "orders", "fills", "attempts", "signals", "events", "contributions",
@@ -109,13 +131,14 @@ def main() -> None:
         with open(out / "EXECUTION_SUMMARY.json", "w") as f:
             json.dump(ex["summary"], f, indent=2, default=str)
         s = ex["summary"]
-        print(f"  {s['first_signal']} .. {s['last_mark']}: SGD {s['initial_cash']:,.0f} -> {s['ending_nav']:,.0f}  "
-              f"CAGR {s['diagnostic_cagr_calendar']:.1%}, max drawdown {s['max_drawdown']:.1%}, "
-              f"Sharpe (daily) {s['daily_sharpe_rf0']:.2f}")
-        print(f"  dividends SGD {s['dividend_income']:,.0f}, fees SGD {s['total_fees']:,.0f}, "
+        e, l_ = s["EVAL"], s["LIVE"]
+        print(f"  EVAL {e['start']} .. {e['end']}: SGD {e['start_nav']:,.0f} -> {e['end_nav']:,.0f}  "
+              f"CAGR {e['cagr']:.1%}, max drawdown {e['max_drawdown']:.1%}, Sharpe (daily) {e['daily_sharpe_rf0']:.2f}"
+              f"   | STI CAGR {e['sti_cagr']:.1%}, max drawdown {e['sti_max_drawdown']:.1%}")
+        print(f"  LIVE {l_['start']} close .. {l_['end']}: SGD {l_['start_nav']:,.0f} -> {l_['end_nav']:,.0f}  "
+              f"return {l_['cum_return']:.2%}   | STI {l_['sti_cum_return']:.2%}")
+        print(f"  whole account: dividends SGD {s['dividend_income']:,.0f}, fees SGD {s['total_fees']:,.0f}, "
               f"slippage SGD {s['proxy_slippage_cost']:,.0f}, order value completed {s['requested_value_completion']:.1%}")
-        print(f"  STI total return, same dates: CAGR {s['sti_tr_same_dates_cagr']:.1%}, "
-              f"max drawdown {s['sti_tr_same_dates_max_drawdown']:.1%}")
     print(f"\nOutputs in {out}  ({time.time() - t0:.0f} s)")
 
 

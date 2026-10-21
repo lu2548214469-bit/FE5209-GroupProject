@@ -7,8 +7,9 @@ Part 1  Comparison table. Start from the baseline (teammate spec: Top-3, 3-year 
         Selection rule, fixed in advance: a variant is preferred only if it beats the baseline
         on BOTH Sharpe and Calmar in the observation period (2019-20). The evaluation period
         (2021-01 .. 2026-09) is reported for every row but never used to choose.
+        The live column is the live window (first trade 2026-10-01, daily NAV to 2026-10-15).
 Part 2  Integrity checks on the frozen strategy (config/strategy.yaml): weights, sector cap,
-        no look-ahead in the yearly style decisions, and reproduction of the reference numbers.
+        no look-ahead in the yearly style decisions, and reproduction of the frozen numbers.
 
 Outputs: outputs/strategy_tests/comparison_table.csv, checks.csv
 """
@@ -26,6 +27,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
 
 from run_backtest import backtest                                   # noqa: E402
+from sgfactor.backtest.live_window import daily_nav, live_schedule, load_daily_adjusted  # noqa: E402
 from sgfactor.backtest.metrics import performance                  # noqa: E402
 from sgfactor.backtest.report import period_mask                   # noqa: E402
 from sgfactor.config import load_config, override                   # noqa: E402
@@ -50,11 +52,22 @@ VARIANTS = [   # (dimension, label, config changes on top of the baseline, data 
     ("sector cap", "no sector cap", {"portfolio.sector_cap": 1.0}, None),
     ("Size direction", "Size = large cap", {}, "size_large"),
 ]
-REFERENCE = {   # frozen Top-4, EVAL to the old end (signals <= 2026-09-11), 10 bp - earlier sandbox run
-    "ann_return": 0.2727, "sharpe": 1.693, "max_drawdown": 0.1523, "calmar": 1.790}
+REFERENCE = {   # frozen Top-4 on data/ (final FX-complete panel), EVAL 2021-01 .. signal 2026-09-18, 10 bp
+    "ann_return": 0.2502, "sharpe": 1.5677, "max_drawdown": 0.1160, "calmar": 2.1572}
+ADJ = None
 
 
-def metrics_row(W: pd.DataFrame, cfg: dict) -> dict:
+def live_return(res: dict, cfg: dict) -> float:
+    """Live window (first trade 2026-10-01), daily NAV, same rules as run_backtest.py."""
+    global ADJ
+    ADJ = load_daily_adjusted(cfg) if ADJ is None else ADJ
+    h = res["holdings"]
+    sched = live_schedule(res["universe"]["signal_date"].unique(), cfg)
+    tg = {s: h[h.signal_date == s].set_index("ticker")["weight"] for s, _ in sched}
+    return float(daily_nav(tg, sched, ADJ, cfg["live_window"]["end"], cfg["costs"]["one_way"]).iloc[-1] - 1)
+
+
+def metrics_row(W: pd.DataFrame, cfg: dict, live: float | None = None) -> dict:
     row = {}
     for per in ("pre", "obs", "eval"):
         m = period_mask(W.index, cfg["periods"][per])
@@ -64,8 +77,7 @@ def metrics_row(W: pd.DataFrame, cfg: dict) -> dict:
     row["eval_beta"] = performance(W.loc[m, "strategy"], W.loc[m, "STI"])["beta"]
     row["eval_ann_turnover"] = float(W.loc[m, "one_way_turnover"].mean() * 52)
     row["avg_names"] = float(W["n_names"].mean())
-    lv = period_mask(W.index, cfg["periods"]["live"])
-    row["live_cum_return"] = float((1 + W.loc[lv, "strategy"]).prod() - 1)
+    row["live_cum_return"] = live
     return row
 
 
@@ -77,18 +89,24 @@ def comparison(cfg0: dict, universe: pd.DataFrame) -> pd.DataFrame:
     for dim, label, changes, data in VARIANTS:
         cfg = override(cfg0, **{**BASELINE, **changes})
         uni, fr = (flipped, None) if data == "size_large" else (universe, fret)
-        W = backtest(cfg, uni, fr)["weekly"]
+        res = backtest(cfg, uni, fr)
+        W = res["weekly"]
         base_weekly = W if base_weekly is None else base_weekly
-        rows.append({"dimension": dim, "variant": label, **metrics_row(W, cfg)})
+        rows.append({"dimension": dim, "variant": label, **metrics_row(W, cfg, live_return(res, cfg))})
         print(f"  {label:<38} OBS Sharpe {rows[-1]['obs_sharpe']:.2f}  EVAL Sharpe {rows[-1]['eval_sharpe']:.2f}")
     T = pd.DataFrame(rows)
     b = T.iloc[0]
     better = (T["obs_sharpe"] > b["obs_sharpe"]) & (T["obs_calmar"] > b["obs_calmar"])
     T["beats_baseline_in_OBS"] = np.where(better, "yes", "no")
     T.loc[0, "beats_baseline_in_OBS"] = "-"
+    sched = live_schedule(universe["signal_date"].unique(), cfg0)
+    sti = pd.read_csv(ROOT / cfg0["data"]["benchmark"], parse_dates=["date"]).set_index("date")["sti_tr_level"]
+    ew = {s: (g := universe[universe.signal_date == s].set_index("ticker")).assign(w=1 / len(g))["w"] for s, _ in sched}
+    live_bench = {"STI": float(sti.loc[cfg0["live_window"]["end"]] / sti.loc[sched[0][1]] - 1),
+                  "EW_universe": float(daily_nav(ew, sched, ADJ, cfg0["live_window"]["end"], 0.0).iloc[-1] - 1)}
     for per, name in (("STI", "STI"), ("EW_universe", "EW universe (gross)")):
         W = base_weekly.assign(strategy=base_weekly[per])
-        r = {"dimension": "benchmark", "variant": name, **metrics_row(W, cfg0)}
+        r = {"dimension": "benchmark", "variant": name, **metrics_row(W, cfg0, live_bench[per])}
         r.pop("eval_ann_turnover"); r.pop("avg_names")
         T = pd.concat([T, pd.DataFrame([r])], ignore_index=True)
     return T
@@ -120,10 +138,10 @@ def checks(cfg: dict, universe: pd.DataFrame) -> pd.DataFrame:
         same.append(", ".join(again) == chosen)
     check("no look-ahead: yearly decisions unchanged when all later data is deleted", all(same),
           f"{sum(same)}/{len(same)} years identical")
-    m = (W.index >= "2021-01-01") & (W.index <= "2026-09-11")
+    m = period_mask(W.index, cfg["periods"]["eval"])
     p = performance(W.loc[m, "strategy"])
     diffs = {k: abs(p[k] - v) for k, v in REFERENCE.items()}
-    check("reproduces earlier Top-4 numbers (EVAL to 2026-09-11)", max(diffs.values()) < 0.002,
+    check("reproduces the frozen Top-4 EVAL numbers", max(diffs.values()) < 0.0005,
           ", ".join(f"{k} {p[k]:.4f}" for k in REFERENCE))
     return pd.DataFrame(out)
 

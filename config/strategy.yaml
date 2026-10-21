@@ -45,6 +45,11 @@ periods:                                         # by SIGNAL date (Friday); each
   pre:  ["2016-01-01", "2018-12-31"]
   obs:  ["2019-01-01", "2020-12-31"]             # observation period: used to choose the configuration
   eval: ["2021-01-01", "2026-09-18"]             # evaluation period: last holding ends 2026-09-28 (<= 09-30)
-  live: ["2026-09-25", "2026-10-09"]             # live window: holdings 2026-09-28 -> 2026-10-19
+  live: ["2026-09-25", "2026-10-09"]             # signals used in the live window (see live_window)
+
+live_window:                                     # daily NAV, starts on 2026-10-01 (course live period)
+  trade_dates: ["2026-10-01", "2026-10-05", "2026-10-12"]   # each uses the latest weekly signal before it
+  end: "2026-10-15"                              # last day with daily prices (2026-10-16 not in the data)
+  prices: data/prices_daily.csv.gz
 
 output_dir: outputs
