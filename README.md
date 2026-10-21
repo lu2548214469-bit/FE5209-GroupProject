@@ -147,29 +147,31 @@ produced 3,525 fills and an ending NAV of SGD 328,755.
 ## Tests (run separately)
 
 ```bash
-python tests/strategy_tests/run_strategy_tests.py      # 90 configurations, about 5-6 minutes
+python tests/strategy_tests/run_strategy_tests.py      # 81 configurations, 2016-20 only, about 5 minutes
 python tests/execution_tests/run_execution_tests.py    # 31 tests, about 25 seconds
 python tests/factor_tests/run_factor_tests.py          # placeholder
 ```
 
-The strategy tests run a full grid with no baseline. They try every combination of:
-- the number of styles chosen each year (2–6);
-- the lookback (3 or 5 years);
-- the style weights (EW, IV or MV);
-- the share of the universe held (top 20, 25 or 30%).
+The strategy test chooses a configuration using 2016–2020 data only, which is the configuration-selection period. Nothing after 2020 is printed or used.
 
-That makes 90 configurations, all on identical rules otherwise. The results print as matrices,
-one block per K, so any single setting can be compared with all the others held fixed. Each block
-covers 2016–20 (the data used to choose), 2016–18, 2019–20, EVAL and LIVE. The tests also print a
-ranking and the median effect of each setting.
+It runs a full grid with no baseline: K 2–6 × lookback 3/5 years × style weights EW/IV/MV × top 20/25/30%, which gives 81 distinct configurations. Configurations are ranked by 2016–20 Sharpe, with Calmar breaking ties.
 
-They then check the configured strategy:
-- weights;
-- the sector cap;
-- look-ahead: each yearly decision is recomputed with all later data deleted;
-- reproduction of the frozen numbers.
+The report has seven parts:
+1. one matrix per K for each metric;
+2. the full ranking;
+3. the median effect of each setting;
+4. how stable the ranking is when costs rise to 20 and 30 bp, and how the top configuration's neighbours rank;
+5. the top configuration against the STI and the equal-weight universe (Newey-West t and bootstrap p);
+6. turnover;
+7. integrity checks: no look-ahead, weights and the sector cap.
 
-Outputs go to `outputs/strategy_tests/`: `grid_all_configurations.csv`, `grid_ranked_by_2016_20_sharpe.csv`, `grid_matrices.txt` and `checks.csv`.
+Output files, in `outputs/strategy_tests/`:
+- `selection_report.txt`
+- `selection_ranking_2016_20.csv`
+- `selection_significance.csv`
+- `selection_turnover_top10.csv`
+- `checks.csv`
+
 The execution tests are fangling's 30 synthetic-data tests of the engine. They cover accounting,
 lots and fees, settlement, corporate actions and look-ahead. There is also one check that the
 real-data run reproduces the frozen account.
