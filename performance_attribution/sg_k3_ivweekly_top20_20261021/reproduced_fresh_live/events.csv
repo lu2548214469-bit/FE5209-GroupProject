@@ -1,0 +1,11 @@
+date,kind,pay_date,amount,ticker,reason
+2026-10-07,cash_settlement,2026-10-07,278.6025136,AGS.SI,sale
+2026-10-07,cash_settlement,2026-10-07,246.64730079999998,I07.SI,sale
+2026-10-07,cash_settlement,2026-10-07,294.58011999999997,RE4.SI,sale
+2026-10-14,cash_settlement,2026-10-14,51.9202228,5GD.SI,sale
+2026-10-14,cash_settlement,2026-10-14,248.64450159999998,5TP.SI,sale
+2026-10-14,cash_settlement,2026-10-14,1072.4898316,AWX.SI,sale
+2026-10-14,cash_settlement,2026-10-14,168.7564696,F9D.SI,sale
+2026-10-14,cash_settlement,2026-10-14,187.72987719999998,P8Z.SI,sale
+2026-10-14,cash_settlement,2026-10-14,145.78866040000003,P9D.SI,sale
+2026-10-14,cash_settlement,2026-10-14,865.7795488,QC7.SI,sale

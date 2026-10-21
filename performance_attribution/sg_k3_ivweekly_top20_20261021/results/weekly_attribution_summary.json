@@ -1,0 +1,34 @@
+[
+  {
+    "window": "selection_2016_2020",
+    "weeks": 261,
+    "cum_return": 1.1117801265929637,
+    "ann_return": 0.1605957256122108,
+    "ann_vol": 0.17435830713853634,
+    "sharpe": 0.9433511366384619,
+    "max_drawdown": 0.3864372654079433,
+    "calmar": 0.41558032826538505,
+    "hit_rate": 0.6015325670498084,
+    "linked_stock_contribution": 1.1452528320851636,
+    "linked_cost_contribution": -0.03347270549220672,
+    "reconciliation_error": -6.8833827526759706e-15,
+    "missing_held_returns": 0,
+    "return_basis": "source listing-currency forward returns; not SGD execution account"
+  },
+  {
+    "window": "weekly_eval_2021_2026",
+    "weeks": 298,
+    "cum_return": 2.5161385558050515,
+    "ann_return": 0.24533639668993046,
+    "ann_vol": 0.16578015825605574,
+    "sharpe": 1.4088363037978677,
+    "max_drawdown": 0.12337245025974952,
+    "calmar": 1.988583319642245,
+    "hit_rate": 0.5738255033557047,
+    "linked_stock_contribution": 2.5477247326528376,
+    "linked_cost_contribution": -0.03158617684780375,
+    "reconciliation_error": -1.7763568394002505e-14,
+    "missing_held_returns": 0,
+    "return_basis": "source listing-currency forward returns; not SGD execution account"
+  }
+]

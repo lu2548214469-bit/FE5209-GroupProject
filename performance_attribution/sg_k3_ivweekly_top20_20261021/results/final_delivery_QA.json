@@ -1,0 +1,94 @@
+{
+  "passed": true,
+  "source_files_verified": 38,
+  "source_checkout_clean": false,
+  "strategy_and_inputs_unchanged": true,
+  "workbook_original_status": [
+    "original unavailable; frozen audit retained",
+    "original unavailable; frozen audit retained"
+  ],
+  "account_group_checks": [
+    {
+      "window": "execution_eval",
+      "check": "stock",
+      "error_sgd": 8.731149137020111e-11
+    },
+    {
+      "window": "execution_eval",
+      "check": "sector",
+      "error_sgd": 2.9103830456733704e-11
+    },
+    {
+      "window": "execution_eval",
+      "check": "currency",
+      "error_sgd": 5.820766091346741e-11
+    },
+    {
+      "window": "execution_live_continuous",
+      "check": "stock",
+      "error_sgd": 4.3655745685100555e-11
+    },
+    {
+      "window": "execution_live_continuous",
+      "check": "sector",
+      "error_sgd": 4.3655745685100555e-11
+    },
+    {
+      "window": "execution_live_continuous",
+      "check": "currency",
+      "error_sgd": 4.3655745685100555e-11
+    },
+    {
+      "window": "execution_whole",
+      "check": "stock",
+      "error_sgd": 2.9103830456733704e-11
+    },
+    {
+      "window": "execution_whole",
+      "check": "sector",
+      "error_sgd": 2.9103830456733704e-11
+    },
+    {
+      "window": "execution_whole",
+      "check": "currency",
+      "error_sgd": 2.9103830456733704e-11
+    },
+    {
+      "window": "fresh_live_cash_start",
+      "check": "stock",
+      "error_sgd": 9.094947017729282e-13
+    },
+    {
+      "window": "fresh_live_cash_start",
+      "check": "sector",
+      "error_sgd": 0.0
+    },
+    {
+      "window": "fresh_live_cash_start",
+      "check": "currency",
+      "error_sgd": 9.094947017729282e-13
+    },
+    {
+      "window": "fresh_live_close_to_close",
+      "check": "stock",
+      "error_sgd": 1.0913936421275139e-11
+    },
+    {
+      "window": "fresh_live_close_to_close",
+      "check": "sector",
+      "error_sgd": 1.0913936421275139e-11
+    },
+    {
+      "window": "fresh_live_close_to_close",
+      "check": "currency",
+      "error_sgd": 1.0913936421275139e-11
+    }
+  ],
+  "workbook_portfolio_controls_passed": 17,
+  "workbook_benchmark_warning_retained": true,
+  "attribution_unit_tests_passed": 4,
+  "embedded_PNGs": 8,
+  "sector_labels_certified": false,
+  "source_dividend_coverage_through": "2026-09-15",
+  "browser_layout_preview": "Local-file preview blocked by browser protocol policy; figures visually inspected and standalone HTML structure checked"
+}

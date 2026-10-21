@@ -216,3 +216,12 @@ What each one prints and how to read it: see [GUIDE.md](GUIDE.md) and [tests/REA
 ## Data licence
 
 The data are derived from LSEG / WRDS sources licensed to NUS. **Keep this repository private.**
+
+
+## Performance attribution / 业绩归因
+
+The frozen K3 / IV weekly / top20 run has a reconciled attribution delivery.
+See [中文归因报告](performance_attribution/sg_k3_ivweekly_top20_20261021/REPORT_ZH.md)
+and [复现说明](performance_attribution/sg_k3_ivweekly_top20_20261021/README_ZH.md).
+The analysis adds stock, sector-group, dividend, FX, cost, drawdown and benchmark-relative
+contributions without changing the strategy, execution configuration, or input data.

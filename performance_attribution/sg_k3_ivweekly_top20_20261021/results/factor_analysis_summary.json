@@ -1,0 +1,78 @@
+{
+  "composite_score_max_error": 4.440892098500626e-16,
+  "latest_weights": [
+    {
+      "signal_date": "2026-09-25",
+      "Quality": 0.3610657564762457,
+      "Momentum": 0.2908150808241659,
+      "Low Risk": 0,
+      "Investment": 0,
+      "Size": 0.3481191626995883,
+      "Value": 0.0
+    },
+    {
+      "signal_date": "2026-10-02",
+      "Quality": 0.36322468978213135,
+      "Momentum": 0.28969355080365433,
+      "Low Risk": 0,
+      "Investment": 0,
+      "Size": 0.3470817594142143,
+      "Value": 0.0
+    },
+    {
+      "signal_date": "2026-10-09",
+      "Quality": 0.36222795382460243,
+      "Momentum": 0.2908914021395519,
+      "Low Risk": 0,
+      "Investment": 0,
+      "Size": 0.3468806440358456,
+      "Value": 0.0
+    }
+  ],
+  "annual_decisions": [
+    {
+      "year": 2016,
+      "selected": "Momentum, Quality, Size"
+    },
+    {
+      "year": 2017,
+      "selected": "Momentum, Quality, Size"
+    },
+    {
+      "year": 2018,
+      "selected": "Momentum, Size, Value"
+    },
+    {
+      "year": 2019,
+      "selected": "Momentum, Quality, Value"
+    },
+    {
+      "year": 2020,
+      "selected": "Quality, Momentum, Size"
+    },
+    {
+      "year": 2021,
+      "selected": "Quality, Size, Momentum"
+    },
+    {
+      "year": 2022,
+      "selected": "Size, Quality, Momentum"
+    },
+    {
+      "year": 2023,
+      "selected": "Momentum, Size, Quality"
+    },
+    {
+      "year": 2024,
+      "selected": "Momentum, Size, Value"
+    },
+    {
+      "year": 2025,
+      "selected": "Value, Momentum, Size"
+    },
+    {
+      "year": 2026,
+      "selected": "Size, Momentum, Quality"
+    }
+  ]
+}

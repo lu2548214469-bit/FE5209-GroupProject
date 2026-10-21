@@ -1,0 +1,28 @@
+[
+  {
+    "observations": 298,
+    "hac_lags": 4,
+    "r_squared": 0.2869086883968237,
+    "adjusted_r_squared": 0.2844995961278941,
+    "residual_weekly_std": 0.018951381162864545,
+    "design_condition_number": 59.23899968389946,
+    "weekly_mean_return": 0.003778592633729426,
+    "annualized_alpha_arithmetic": 0.07790471495054227,
+    "mean_return_reconciliation_error": 2.6020852139652106e-18,
+    "inference": "HAC Bartlett lag4, finite-sample n/(n-k), asymptotic normal two-sided p; descriptive not causal",
+    "model": "market_only"
+  },
+  {
+    "observations": 298,
+    "hac_lags": 4,
+    "r_squared": 0.8226516129426329,
+    "adjusted_r_squared": 0.8183707898067654,
+    "residual_weekly_std": 0.009548359722023246,
+    "design_condition_number": 124.17013240437358,
+    "weekly_mean_return": 0.003778592633729426,
+    "annualized_alpha_arithmetic": -0.07359203068814803,
+    "mean_return_reconciliation_error": 8.196568423990414e-17,
+    "inference": "HAC Bartlett lag4, finite-sample n/(n-k), asymptotic normal two-sided p; descriptive not causal",
+    "model": "market_plus_six_styles"
+  }
+]

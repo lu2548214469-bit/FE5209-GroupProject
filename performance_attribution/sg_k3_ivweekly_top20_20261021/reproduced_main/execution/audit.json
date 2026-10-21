@@ -1,0 +1,32 @@
+{
+  "max_accounting_error": 1.1641532182693481e-10,
+  "config": {
+    "initial_cash": 100000,
+    "default_lot": 100,
+    "reserve_fraction": 0.01,
+    "participation": 0.1,
+    "adv_window": 20,
+    "max_order_sessions": 5,
+    "broker_bps": 5,
+    "minimum_commission": 5,
+    "market_bps": 4,
+    "fee_tax_rate": 0,
+    "slippage_bps": 10,
+    "impact_y": 0,
+    "impact_domain": 0.2,
+    "settlement_sessions": 2,
+    "max_stale_sessions": 5,
+    "action_policy": "price_only_diagnostic"
+  },
+  "corporate_action_coverage_verified": false,
+  "target_mode": "frozen_target_replay",
+  "execution_scope": "daily_close_proxy_with_ex_post_day_volume_cap",
+  "performance_scope": "SOURCE_DIVIDEND_14D_ESTIMATE_UNVERIFIED_PRICE_SHARE_BASIS",
+  "full_live_fill_simulation": false,
+  "terminated_bankrupt": false,
+  "framework_release": "FINAL_100K_DIV14_V1",
+  "corporate_action_and_price_basis_verified": false,
+  "actual_dividend_payment_dates_verified": false,
+  "non_sgd_listings": "converted to SGD with data/fx_daily.csv",
+  "calendar_source": ">=50 names reporting positive volume; proxy"
+}
