@@ -6,8 +6,8 @@
   },
   {
     "path": "attribution_engine.py",
-    "bytes": 25399,
-    "sha256": "f4b83a32334ee8b81fb3b5c4d074321a666b310a7b7e54b80c4247bcc7a98a90"
+    "bytes": 25380,
+    "sha256": "092a001740546f08bd4c87153464e68f4312c5638339ea8df1d7fb494d5bbcc6"
   },
   {
     "path": "build_report.py",
@@ -26,8 +26,8 @@
   },
   {
     "path": "README_ZH.md",
-    "bytes": 6718,
-    "sha256": "4a6c17e16bfbacd1b870d2fa204b5c786efe42123b7b2c7ac2b96b496f0cd5e1"
+    "bytes": 6915,
+    "sha256": "a69e07c0277d37a27dfa3f24e70f6f44852b869aa2fbd474b612ef0817a180a3"
   },
   {
     "path": "report/figures/01_historical_nav.png",
@@ -867,7 +867,7 @@
   {
     "path": "source_audit/attribution_tests.txt",
     "bytes": 661,
-    "sha256": "d795c5c279b7c52eaf1a859b10dba9ab436df0e92d031d5fa04a7509f05c7890"
+    "sha256": "ea57de4f9c3ed1c3a43bd1b48ef40e4d8485d141c82b38103ef84598c7508b5d"
   },
   {
     "path": "source_audit/repositories.json",
@@ -876,13 +876,18 @@
   },
   {
     "path": "source_audit/source_files.json",
-    "bytes": 6265,
-    "sha256": "9857ce4377d5614758a6b283a87e24f9cbe020db57fd875b52a95c95e9badee3"
+    "bytes": 10145,
+    "sha256": "30a15beda4b8773bdd8fb073a58224c4ffdad43966640de5b5fd9dcf2d4fb41a"
   },
   {
     "path": "source_audit/workbooks.json",
     "bytes": 110754,
     "sha256": "d197c7892b53565423cc527cf89df127261dfadb983f50b564be7f2a5e316b57"
+  },
+  {
+    "path": "source_integrity.py",
+    "bytes": 862,
+    "sha256": "8502f877b78dbbd9a66015dcc3db7f65c81df821365043f8d9823b96480d20a7"
   },
   {
     "path": "test_attribution.py",
@@ -891,7 +896,7 @@
   },
   {
     "path": "verify_delivery.py",
-    "bytes": 3885,
-    "sha256": "69fc8cfab95f52ffa76714fe7840223a05b41a4db3f70aabe537495251eceef5"
+    "bytes": 3901,
+    "sha256": "9afd883405d9f10ab86d5f4c738cb28cbccd821396400344ca189051256fd75f"
   }
 ]

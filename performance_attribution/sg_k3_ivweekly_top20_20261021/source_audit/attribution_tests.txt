@@ -4,6 +4,6 @@ test_brinson_with_cash_and_empty_portfolio_sector (__main__.AttributionIdentitie
 test_multiplicative_return_link_is_not_simple_sum (__main__.AttributionIdentities.test_multiplicative_return_link_is_not_simple_sum) ... ok
 
 ----------------------------------------------------------------------
-Ran 4 tests in 0.309s
+Ran 4 tests in 0.310s
 
 OK

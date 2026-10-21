@@ -7,6 +7,7 @@ import sys
 from html.parser import HTMLParser
 import base64
 import pandas as pd
+from source_integrity import source_matches
 
 HERE=Path(__file__).resolve().parent
 REPO=HERE.parent.parent if (HERE.parent.parent/'config/strategy.yaml').exists() else HERE.parent/'FE5209-GroupProject-attribution-review'
@@ -15,7 +16,7 @@ def digest(path):return hashlib.sha256(path.read_bytes()).hexdigest()
 
 source=json.loads((HERE/'source_audit/source_files.json').read_text())
 locked=[x for x in source if x['path'] not in ['README.md','GUIDE.md']]
-assert all(digest(REPO/x['path'])==x['sha256'] for x in locked)
+assert source_matches(REPO,locked)
 books=json.loads((HERE/'source_audit/workbooks.json').read_text(encoding='utf-8'))
 book_status=[]
 for b in books:

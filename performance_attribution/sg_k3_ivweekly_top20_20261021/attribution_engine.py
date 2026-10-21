@@ -11,6 +11,7 @@ import copy
 import numpy as np
 import pandas as pd
 from scipy.stats import norm
+from source_integrity import source_matches
 
 HERE=Path(__file__).resolve().parent
 ROOT=HERE.parent
@@ -372,7 +373,7 @@ def main():
     if not all(x['passed'] for x in checks if x['required']):raise AssertionError('Required portfolio workbook reconciliation failed')
     source=json.loads((HERE/'source_audit/source_files.json').read_text())
     locked=[x for x in source if x['path'] not in ['README.md','GUIDE.md']]
-    unchanged=all(hashlib.sha256((REPO/x['path']).read_bytes()).hexdigest()==x['sha256'] for x in locked)
+    unchanged=source_matches(REPO,locked)
     assert unchanged
     action_dates=pd.to_datetime(data['actions'].date)
     flags=dict(strategy='K3_IV_weekly_top20',source_commit='abf1c66',source_files_unchanged=unchanged,
