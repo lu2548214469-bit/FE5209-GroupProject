@@ -1,0 +1,8 @@
+test_unsettled_shares_and_receipts_are_not_immediately_available (__main__.ExitLedgerChecks.test_unsettled_shares_and_receipts_are_not_immediately_available) ... ok
+test_zero_day_can_reduce_lagged_ADV_below_one_lot (__main__.ExitLedgerChecks.test_zero_day_can_reduce_lagged_ADV_below_one_lot) ... ok
+test_zero_volume_delays_exit_and_cannot_create_sale_proceeds (__main__.ExitLedgerChecks.test_zero_volume_delays_exit_and_cannot_create_sale_proceeds) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.027s
+
+OK

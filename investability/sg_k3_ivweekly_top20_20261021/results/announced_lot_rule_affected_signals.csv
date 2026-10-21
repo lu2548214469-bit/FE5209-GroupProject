@@ -1,0 +1,1 @@
+signal_date,execution_date,ticker,target_weight,signal_nav,sizing_price,sizing_price_date,target_shares,ideal_target_notional,lot_rounded_target_notional,rounding_gap,rounding_gap_fraction_nav,fractional_lots_lost

@@ -1,0 +1,6 @@
+{
+  "fill_tickets": 47,
+  "off_native_tick_grid_tickets": 0,
+  "weighted_half_tick_bps": 35.02614287576461,
+  "note": "half-tick is a mechanical quote-grid illustration, not an observed spread; price/share adjustment basis remains unverified"
+}
