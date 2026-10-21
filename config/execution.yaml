@@ -1,0 +1,37 @@
+# Daily execution (account-level) backtest: the group's frozen setting FINAL_100K_DIV14_V1
+# (fangling, 2026-10-20). Replays the strategy's weekly target weights through a daily share-and-cash
+# account. Do not change these after seeing results.
+
+release: FINAL_100K_DIV14_V1
+
+data:
+  prices: data/prices_daily.csv.gz             # date, ticker, close, volume
+  sessions: data/trading_sessions.csv          # proxy SGX trading calendar
+  security_master: data/security_master.csv    # trading currency must be SGD
+  corporate_actions: data/corporate_actions.csv
+
+start: "2021-01-01"            # account starts in cash at the first evaluation signal (cash reset)
+end: "2026-09-30"              # last holding must end by this date AND inside the daily price data
+price_history_from: "2020-09-01"   # warm-up for the 20-day ADV
+
+settings:                      # ExecutionConfig (live/engine.py)
+  initial_cash: 100000         # SGD
+  default_lot: 100             # board lot
+  reserve_fraction: 0.01       # 1% cash kept back when sizing
+  participation: 0.10          # fill <= 10% of the day's volume and <= 10% of lagged 20-day ADV
+  adv_window: 20
+  max_order_sessions: 5        # unfilled orders expire after 5 sessions
+  broker_bps: 5                # commission 5 bp per side, minimum SGD 5
+  minimum_commission: 5
+  market_bps: 4                # exchange / clearing fees
+  fee_tax_rate: 0
+  slippage_bps: 10
+  impact_y: 0
+  impact_domain: 0.2
+  settlement_sessions: 2       # T+2
+  max_stale_sessions: 5
+  action_policy: price_only_diagnostic
+
+dividends:                     # source cash dividends, paid ex-date + 14 calendar days (assumption)
+  enabled: true
+  payment_delay_calendar_days: 14

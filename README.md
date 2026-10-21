@@ -13,8 +13,19 @@ pip install -r requirements.txt
 python run_backtest.py
 ```
 
-The run takes about 15 seconds. It reads `data/` and writes all results to `outputs/SG_Adaptive_Top4/`.
-Nothing needs downloading and no test code is run.
+The run takes about 25 seconds. It reads `data/` and writes all results to `outputs/SG_Adaptive_Top4/`.
+Nothing needs downloading and no test code is run. It has two parts:
+
+- **Part A: strategy and weekly backtest.** Builds the weekly target weights and a weekly NAV net of 10 bp per side.
+- **Part B: daily execution account** (`src/sgfactor/live/`). Trades the same targets from SGD 100,000 in cash
+  starting in January 2021, with:
+  - board lots;
+  - minimum commissions and fees;
+  - volume limits;
+  - T+2 settlement;
+  - dividends.
+
+  This is the headline result. Use `--skip-execution` to run Part A only.
 
 ## Repository layout
 
@@ -27,9 +38,11 @@ src/sgfactor/
   factors/                   style scores -> weekly long-short factor returns
   strategy/                  yearly style selection, style weights, composite score, holdings
   backtest/                  weekly NAV with drift and costs, metrics, summary tables
-  live/                      live / execution framework (to be added)
+  live/                      daily execution account (engine by fangling, Backtest-Framework-Top4)
+config/execution.yaml        frozen execution settings FINAL_100K_DIV14_V1
 tests/
   strategy_tests/            controlled-variable comparison + integrity checks
+  execution_tests/           execution engine tests + reproduction of the frozen final run
   factor_tests/              factor tests (to be added)
 scripts/build_clean_data.py  how data/ was built from the provider's raw files
 ```
@@ -72,6 +85,39 @@ returns whose holding period has already ended.
 
 Live window (3 weeks, cumulative): strategy −4.3%, STI −5.6%, equal-weight universe −5.5%.
 
+### Daily execution account (Part B, headline result)
+
+Setting `FINAL_100K_DIV14_V1`, frozen by the group on 2026-10-20 (see `config/execution.yaml`):
+
+| Item | Setting |
+|---|---|
+| Starting cash | SGD 100,000 at the first 2021 signal |
+| Trades | daily close, board lot of 100, 1% cash reserve |
+| Volume limit | at most 10% of the day's volume and 10% of the lagged 20-day ADV |
+| Order life | 5 sessions |
+| Costs | commission 5 bp (minimum SGD 5) + market fees 4 bp + slippage 10 bp |
+| Settlement | T+2 |
+| Dividends | source cash dividends, paid 14 calendar days after the ex-date (an assumption) |
+
+| 2021-01-08 .. 2026-09-21 | Strategy | STI total return, same dates |
+|---|---|---|
+| SGD 100,000 grows to | 328,755 | |
+| CAGR | 23.2% | 17.1% |
+| Max drawdown | 16.9% | 14.5% |
+| Sharpe (daily, rf 0) | 1.70 | |
+
+Breakdown:
+- Dividends received: SGD 36,261.
+- Fees: SGD 19,292.
+- Slippage: SGD 3,452.
+- Share of requested order value that was filled: 98.5%.
+
+These numbers match the group's frozen final run exactly: 3,525 fills, 3,043 orders and the same
+ending NAV. That run was produced by `run_top4.py` on the `Backtest-Framework-Top4` branch.
+
+**Why the account stops at 2026-09-21:** the daily price file ends on 2026-09-24. The live window
+can be added once daily prices to mid-October are available.
+
 ## Output files (`outputs/SG_Adaptive_Top4/`)
 
 | File | Content |
@@ -85,18 +131,27 @@ Live window (3 weeks, cumulative): strategy −4.3%, STI −5.6%, equal-weight u
 | `06_performance_summary.csv` | metrics by period |
 | `07_calendar_year_returns.csv` | returns by calendar year |
 | `run_manifest.json` | configuration used and trade statistics |
+| `EXECUTION_SUMMARY.json` | **daily execution account: headline result** |
+| `execution/daily.csv` | daily NAV, cash, receivables, P&L, dividends, fees |
+| `execution/holdings.csv`, `orders.csv`, `fills.csv`, `attempts.csv` | shares held, orders, fills, reasons for unfilled orders |
+| `execution/dividends.csv`, `events.csv` | dividend events used (with assumed pay dates) and cash settlements |
+| `execution/contributions.csv`, `risk.csv`, `audit.json` | per-stock contribution, concentration, accounting checks |
 
 ## Tests (run separately)
 
 ```bash
-python tests/strategy_tests/run_strategy_tests.py    # about 1 minute
-python tests/factor_tests/run_factor_tests.py        # placeholder
+python tests/strategy_tests/run_strategy_tests.py      # about 1 minute
+python tests/execution_tests/run_execution_tests.py    # 31 tests, about 25 seconds
+python tests/factor_tests/run_factor_tests.py          # placeholder
 ```
 
 The strategy tests change one setting at a time from the baseline (Top-3) and report every
 period. The selection rule, fixed in advance, is that a variant must beat the baseline on both
 Sharpe and Calmar in OBS. They also check weights, the sector cap, look-ahead (each yearly
 decision is recomputed with all later data deleted) and reproduction of earlier results.
+The execution tests are fangling's 30 synthetic-data tests of the engine. They cover accounting,
+lots and fees, settlement, corporate actions and look-ahead. There is also one check that the
+real-data run reproduces the frozen final result.
 
 ## Limitations
 
@@ -104,8 +159,12 @@ decision is recomputed with all later data deleted) and reproduction of earlier 
   window excludes companies that later delisted.
 - **Not point-in-time.** Fundamentals behind Quality, Investment and Value are not strictly
   point-in-time, and Size and Value use a market-cap proxy.
-- **Simplified execution.** Weekly returns ignore board lots, minimum commissions and liquidity
-  limits. The execution framework will handle these.
+- **Simplified execution in the weekly backtest.** Part A ignores board lots, minimum commissions and
+  liquidity limits. Part B models them, but only as a close-price proxy: zero-volume days are
+  assumed to be data gaps, and fills are capped by that day's realised volume.
+- **Unverified dividend data.** Dividend pay dates, currency and tax treatment are assumed, and the
+  vendor's share basis has not been verified. The audit file labels the result
+  `SOURCE_DIVIDEND_14D_ESTIMATE_UNVERIFIED_PRICE_SHARE_BASIS`.
 - **Risk-free rate.** Sharpe ratios use a risk-free rate of 0, because the package has no SGD
   risk-free rate series.
 - **Hindsight.** The evaluation period had been looked at before the configuration was frozen.

@@ -28,3 +28,19 @@ There is one row per (signal week, stock), and only stock-weeks that are in the 
 ## `sti_total_return_daily.csv`: benchmark
 
 This is the FTSE Straits Times Index total return (LSEG `.TRISTI`, SGD), daily from 2006-01-03 to 2026-10-16.
+
+## Daily execution inputs (used by `src/sgfactor/live/`)
+
+All four files come from `SGX_comprehensive_2006_2026_handoff`, with columns trimmed. They are built by
+`scripts/build_clean_data.py --package ...`.
+
+| File | Content |
+|---|---|
+| `prices_daily.csv.gz` | `date, ticker, close, volume` for the 74 universe stocks, 2006-01-03 .. 2026-09-24 |
+| `trading_sessions.csv` | proxy trading calendar: days on which at least 50 of the 114 names report positive volume |
+| `security_master.csv` | `ticker, company_name, currency, six_sector, listing_date` for all 114 names |
+| `corporate_actions.csv` | `date, ticker, action_type, dividend, split_ratio` for universe stocks |
+
+Notes on these files:
+- Prices are split-adjusted, so split events are not applied again.
+- Cash dividends are paid in the account 14 calendar days after the ex-date. This is the group's assumption, not verified pay dates.

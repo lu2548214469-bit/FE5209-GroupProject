@@ -1,10 +1,15 @@
 """Run the main strategy (SG Adaptive Top-4) on the historical data and write the results.
 
-    python run_backtest.py                       # uses config/strategy.yaml
+    python run_backtest.py                       # strategy + daily execution account
+    python run_backtest.py --skip-execution      # strategy and weekly backtest only (~15 s)
     python run_backtest.py --config my.yaml --out outputs/my_run
 
-Steps: clean universe -> style long-short returns -> yearly style selection and weights
--> weekly composite score -> target holdings -> weekly NAV with costs -> metrics vs STI.
+Part A  strategy + weekly backtest: clean universe -> style long-short returns -> yearly style
+        selection and weights -> weekly composite score -> target weights -> weekly NAV with
+        10 bp costs -> metrics vs STI, by period.
+Part B  daily execution account (src/sgfactor/live, config/execution.yaml): the same target
+        weights traded from SGD 100,000 cash in 2021 with board lots, minimum fees, volume
+        limits, T+2 settlement and dividends. This is the headline "real-money" result.
 """
 from __future__ import annotations
 
@@ -22,6 +27,7 @@ from sgfactor.backtest import net_returns, trade_stats, weekly_backtest         
 from sgfactor.backtest.report import period_mask, summary_table, yearly_table   # noqa: E402
 from sgfactor.config import load_config, resolve                                # noqa: E402
 from sgfactor.data import benchmark_weekly, load_benchmark, load_universe        # noqa: E402
+from sgfactor.live import run_execution                                         # noqa: E402
 from sgfactor.strategy import run_strategy                                      # noqa: E402
 
 
@@ -49,6 +55,8 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--config", default=None)
     ap.add_argument("--out", default=None)
+    ap.add_argument("--execution-config", default=str(resolve("config/execution.yaml")))
+    ap.add_argument("--skip-execution", action="store_true", help="skip the daily execution account")
     a = ap.parse_args()
     t0 = time.time()
     cfg = load_config(a.config)
@@ -84,6 +92,30 @@ def main() -> None:
     print("\nStyles chosen each year:")
     print(res["decisions"][["year", "selected"]].to_string(index=False))
     print(f"\nEVAL trades: {trades}")
+    if not a.skip_execution:
+        print("\nPart B: daily execution account (board lots, fees, volume caps, T+2, dividends) ...")
+        ecfg = load_config(a.execution_config)
+        cal = res["path"].reset_index()[["signal_date", "next_execution_date"]]
+        ex = run_execution(res["holdings"][["signal_date", "execution_date", "ticker", "weight"]], cal, ecfg,
+                           load_benchmark(cfg))
+        d = out / "execution"
+        d.mkdir(exist_ok=True)
+        for key in ("daily", "holdings", "orders", "fills", "attempts", "signals", "events", "contributions",
+                    "receipts_at_end", "unsettled_shares_at_end", "risk", "dividends"):
+            if isinstance(ex.get(key), pd.DataFrame):
+                ex[key].to_csv(d / f"{key}.csv", index=False)
+        with open(d / "audit.json", "w") as f:
+            json.dump(ex["audit"], f, indent=2, default=str)
+        with open(out / "EXECUTION_SUMMARY.json", "w") as f:
+            json.dump(ex["summary"], f, indent=2, default=str)
+        s = ex["summary"]
+        print(f"  {s['first_signal']} .. {s['last_mark']}: SGD {s['initial_cash']:,.0f} -> {s['ending_nav']:,.0f}  "
+              f"CAGR {s['diagnostic_cagr_calendar']:.1%}, max drawdown {s['max_drawdown']:.1%}, "
+              f"Sharpe (daily) {s['daily_sharpe_rf0']:.2f}")
+        print(f"  dividends SGD {s['dividend_income']:,.0f}, fees SGD {s['total_fees']:,.0f}, "
+              f"slippage SGD {s['proxy_slippage_cost']:,.0f}, order value completed {s['requested_value_completion']:.1%}")
+        print(f"  STI total return, same dates: CAGR {s['sti_tr_same_dates_cagr']:.1%}, "
+              f"max drawdown {s['sti_tr_same_dates_max_drawdown']:.1%}")
     print(f"\nOutputs in {out}  ({time.time() - t0:.0f} s)")
 
 
