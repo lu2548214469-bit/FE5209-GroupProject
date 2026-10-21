@@ -29,6 +29,7 @@ weighting:
   min_weight: 0.05
   max_weight: 0.80
   mv_shrinkage: 0.10
+  rebalance: yearly                              # when style weights are re-estimated: yearly | monthly | weekly
 
 portfolio:
   select_fraction: 0.20                          # buy the top 20% by composite score

@@ -1,24 +1,27 @@
 """Strategy selection test: which configuration is best on 2016-2020 data?
 
-    python tests/strategy_tests/run_strategy_tests.py        # about 5 minutes
+    python tests/strategy_tests/run_strategy_tests.py        # about 4 minutes
 
 Only the selection period 2016-01 .. 2020-12 is used and reported (signal dates; split into
 2016-18 and 2019-20 as well). Nothing after 2020 is printed or used to rank.
 
 Grid, no baseline: every combination of
-    K         styles selected each year      2, 3, 4, 5, 6   (6 = all styles, so lookback has no effect:
-                                                             run once, shown as lookback "-")
-    lookback  years used to rank the styles  3, 5
-    weights   how the selected styles are weighted
-              EW = equal, IV = inverse volatility, MV = minimum variance
+    K         styles selected each year      3, 4, 5
+    weights   how the selected styles are weighted, and how often the weights are re-estimated
+              EW          equal weight
+              IV_yearly   inverse volatility, re-estimated once a year (with the style selection)
+              IV_monthly  inverse volatility, re-estimated at the first signal week of each month
+              IV_weekly   inverse volatility, re-estimated every week
+              MV          minimum variance, re-estimated once a year
     top       share of the universe held     20, 25, 30 %   (buffer exit line = top + 10 pp)
-= 81 distinct configurations. Fixed for all: 30% sector cap, small-cap Size, weekly rebalance,
-10 bp one-way cost, risk-free rate 0.
+= 45 configurations. Fixed for all: 3-year lookback for the yearly style selection, 52-week window
+and 5-80% bounds for IV / MV, 30% sector cap, small-cap Size, weekly stock rebalance, 10 bp one-way
+cost, risk-free rate 0.
 
 Ranking rule: 2016-20 Sharpe, ties broken by 2016-20 Calmar.
 
 Output
-  1  matrices per K (rows = lookback x weights, columns = share held) for every 2016-20 metric
+  1  matrices per K (rows = weights, columns = share held) for every 2016-20 metric
   2  full ranking
   3  median effect of each setting
   4  robustness of the ranking: costs 10 / 20 / 30 bp; the top configuration's neighbours
@@ -48,7 +51,10 @@ from sgfactor.data import load_universe                            # noqa: E402
 from sgfactor.factors import factor_returns, style_scores           # noqa: E402
 from sgfactor.strategy import select_styles                         # noqa: E402
 
-GRID = {"K": [2, 3, 4, 5, 6], "lookback": [3, 5], "weights": ["EW", "IV", "MV"], "top": [0.20, 0.25, 0.30]}
+LOOKBACK = 3
+WEIGHTS = {"EW": ("EW", "yearly"), "IV_yearly": ("IV", "yearly"), "IV_monthly": ("IV", "monthly"),
+           "IV_weekly": ("IV", "weekly"), "MV": ("MV", "yearly")}
+GRID = {"K": [3, 4, 5], "weights": list(WEIGHTS), "top": [0.20, 0.25, 0.30]}
 PERIODS = {"2016_20": ("2016-01-01", "2020-12-31"), "2016_18": ("2016-01-01", "2018-12-31"),
            "2019_20": ("2019-01-01", "2020-12-31")}
 SEL = PERIODS["2016_20"]
@@ -56,15 +62,12 @@ COSTS = (0.001, 0.002, 0.003)
 METRICS = ("ann_return", "ann_vol", "sharpe", "max_drawdown", "calmar")
 
 
-def label(k, lb, wm, top) -> str:
-    return f"K{k}_{'-' if k == 6 else str(lb) + 'y'}_{wm}_top{int(round(top * 100))}"
+def label(k, wm, top) -> str:
+    return f"K{k}_{wm}_top{int(round(top * 100))}"
 
 
 def configs():
-    for k, lb, wm, top in itertools.product(*GRID.values()):
-        if k == 6 and lb != GRID["lookback"][0]:
-            continue                                   # identical to the other lookback
-        yield k, lb, wm, top
+    yield from itertools.product(*GRID.values())
 
 
 def in_sel(index) -> np.ndarray:
@@ -75,14 +78,16 @@ def run_grid(cfg0: dict, universe: pd.DataFrame):
     fret = factor_returns(style_scores(universe, cfg0), list(cfg0["factors"]), cfg0["factor_returns"]["leg_fraction"])
     rows, store = [], {}
     combos = list(configs())
-    for i, (k, lb, wm, top) in enumerate(combos, 1):
-        cfg = override(cfg0, **{"selection.top_k": k, "selection.lookback_years": lb, "weighting.method": wm,
+    for i, (k, wm, top) in enumerate(combos, 1):
+        method, freq = WEIGHTS[wm]
+        cfg = override(cfg0, **{"selection.top_k": k, "selection.lookback_years": LOOKBACK,
+                                "weighting.method": method, "weighting.rebalance": freq,
                                 "portfolio.select_fraction": top, "portfolio.exit_fraction": round(top + 0.10, 2)})
         res = backtest(cfg, universe, fret)
         W, path = res["weekly"], res["path"]
         m = in_sel(W.index)
-        name = label(k, lb, wm, top)
-        row = {"config": name, "K": k, "lookback": "-" if k == 6 else f"{lb}y", "weights": wm,
+        name = label(k, wm, top)
+        row = {"config": name, "K": k, "weights": wm,
                "top_pct": int(round(top * 100)), "avg_names": round(float(W.loc[m, "n_names"].mean()), 1),
                "ann_turnover": float(W.loc[m, "one_way_turnover"].mean() * 52)}
         for per, (a, b) in PERIODS.items():
@@ -94,7 +99,7 @@ def run_grid(cfg0: dict, universe: pd.DataFrame):
             row[f"2016_20_sharpe_{int(c * 1e4)}bp"] = performance(net[in_sel(net.index)])["sharpe"]
         rows.append(row)
         store[name] = (cfg, res)
-        print(f"  [{i:>2}/{len(combos)}] {name:<18} 2016-20 Sharpe {row['2016_20_sharpe']:.2f}  "
+        print(f"  [{i:>2}/{len(combos)}] {name:<22} 2016-20 Sharpe {row['2016_20_sharpe']:.2f}  "
               f"Calmar {row['2016_20_calmar']:.2f}", flush=True)
     G = pd.DataFrame(rows).sort_values(["2016_20_sharpe", "2016_20_calmar"], ascending=False).reset_index(drop=True)
     G.insert(0, "rank", np.arange(1, len(G) + 1))
@@ -104,7 +109,7 @@ def run_grid(cfg0: dict, universe: pd.DataFrame):
 def matrices(G: pd.DataFrame, metric: str, pct: bool) -> str:
     out = []
     for k, g in G.groupby("K"):
-        t = g.assign(row=g["lookback"] + " " + g["weights"]).pivot(index="row", columns="top_pct", values=metric)
+        t = g.pivot(index="weights", columns="top_pct", values=metric).reindex(list(WEIGHTS))
         t = (t * 100).round(1) if pct else t.round(2)
         t.columns = [f"top{c}%" for c in t.columns]
         t.index.name = f"K={k}"
@@ -189,7 +194,7 @@ def main() -> None:
         print(s)
         text.append(s)
 
-    emit("\n" + "=" * 100 + "\n1. MATRICES (one block per K; rows = lookback x weights; columns = share held)\n" + "=" * 100)
+    emit("\n" + "=" * 100 + "\n1. MATRICES (one block per K; rows = weights; columns = share held)\n" + "=" * 100)
     for title, metric, is_pct in [("2016-20 Sharpe", "2016_20_sharpe", False), ("2016-20 Calmar", "2016_20_calmar", False),
                                   ("2016-20 annual return %", "2016_20_ann_return", True),
                                   ("2016-20 annual volatility %", "2016_20_ann_vol", True),
@@ -198,13 +203,13 @@ def main() -> None:
         emit(f"\n----- {title} -----\n\n{matrices(G, metric, is_pct)}")
 
     emit("\n" + "=" * 100 + "\n2. RANKING by 2016-20 Sharpe (ties: Calmar)\n" + "=" * 100 + "\n")
-    cols = ["rank", "K", "lookback", "weights", "top_pct", "2016_20_ann_return", "2016_20_ann_vol", "2016_20_sharpe",
+    cols = ["rank", "K", "weights", "top_pct", "2016_20_ann_return", "2016_20_ann_vol", "2016_20_sharpe",
             "2016_20_max_drawdown", "2016_20_calmar", "2016_18_sharpe", "2016_18_calmar", "2019_20_sharpe",
             "2019_20_calmar"]
     emit(pct(G[cols], ["2016_20_ann_return", "2016_20_ann_vol", "2016_20_max_drawdown"]).round(2).to_string(index=False))
 
     emit("\n" + "=" * 100 + "\n3. MEDIAN EFFECT OF EACH SETTING (2016-20; median over all other settings)\n" + "=" * 100)
-    for d in ("K", "lookback", "weights", "top_pct"):
+    for d in ("K", "weights", "top_pct"):
         emit("\n" + G.groupby(d)[["2016_20_sharpe", "2016_20_calmar", "2016_18_sharpe", "2019_20_sharpe"]]
              .median().round(2).T.to_string())
 
@@ -218,7 +223,7 @@ def main() -> None:
     emit(cost.head(10).round(2).to_string(index=False))
     emit(f"\nRank correlation of the whole ranking, 10 bp vs 30 bp: "
          f"{cost['2016_20_sharpe'].corr(cost['2016_20_sharpe_30bp'], method='spearman'):.2f}")
-    keys = ["K", "lookback", "weights", "top_pct"]
+    keys = ["K", "weights", "top_pct"]
     diff = sum((G[k] != best[k]).astype(int) for k in keys)
     nb = G[diff == 1][["rank", "config", "2016_20_sharpe", "2016_20_calmar", "2016_18_sharpe", "2019_20_sharpe"]]
     emit(f"\n4b. Neighbours of {best.config} (one setting changed), with their rank among {len(G)}\n")

@@ -57,7 +57,7 @@ scripts/build_clean_data.py  how data/ was built from the provider's raw files
 | Style scores | Quality, Momentum (12-1), Low Risk, Investment, Size (small cap), Value. Supplied by the data team, standardised, higher = more favoured |
 | Factor returns | Each week: top 30% minus bottom 30% by score, equal weight |
 | Style selection | First signal week of each year: rank styles by mean / std of the last 3 years of completed weekly factor returns, keep the top 4 |
-| Style weights | Inverse volatility over the last 52 weeks, bounded to 5%–80% |
+| Style weights | Inverse volatility over the last 52 weeks, bounded to 5%–80%; re-estimated yearly by default (`weighting.rebalance`: yearly / monthly / weekly) |
 | Composite score | Weighted sum of the four selected style scores |
 | Holdings | Top 20% by composite score, equal weight (about 16 names). Buffer: a holding is kept while it stays in the top 30%. At most 30% of names in one sector |
 | Timing | Signal on Friday close; trade at the next trading day's close; hold one week |
@@ -147,14 +147,14 @@ produced 3,525 fills and an ending NAV of SGD 328,755.
 ## Tests (run separately)
 
 ```bash
-python tests/strategy_tests/run_strategy_tests.py      # 81 configurations, 2016-20 only, about 5 minutes
+python tests/strategy_tests/run_strategy_tests.py      # 45 configurations, 2016-20 only, about 4 minutes
 python tests/execution_tests/run_execution_tests.py    # 31 tests, about 25 seconds
 python tests/factor_tests/run_factor_tests.py          # placeholder
 ```
 
 The strategy test chooses a configuration using 2016–2020 data only, which is the configuration-selection period. Nothing after 2020 is printed or used.
 
-It runs a full grid with no baseline: K 2–6 × lookback 3/5 years × style weights EW/IV/MV × top 20/25/30%, which gives 81 distinct configurations. Configurations are ranked by 2016–20 Sharpe, with Calmar breaking ties.
+It runs a full grid with no baseline: K 3/4/5 × style weights (EW; IV re-estimated yearly, monthly or weekly; MV) × top 20/25/30%, with a 3-year lookback. That gives 45 configurations. Configurations are ranked by 2016–20 Sharpe, with Calmar breaking ties.
 
 The report has seven parts:
 1. one matrix per K for each metric;
