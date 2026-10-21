@@ -147,15 +147,29 @@ produced 3,525 fills and an ending NAV of SGD 328,755.
 ## Tests (run separately)
 
 ```bash
-python tests/strategy_tests/run_strategy_tests.py      # about 1 minute
+python tests/strategy_tests/run_strategy_tests.py      # 90 configurations, about 5-6 minutes
 python tests/execution_tests/run_execution_tests.py    # 31 tests, about 25 seconds
 python tests/factor_tests/run_factor_tests.py          # placeholder
 ```
 
-The strategy tests change one setting at a time from the baseline (Top-3) and report every
-period. The selection rule, fixed in advance, is that a variant must beat the baseline on both
-Sharpe and Calmar in OBS. They also check weights, the sector cap, look-ahead (each yearly
-decision is recomputed with all later data deleted) and reproduction of the frozen numbers.
+The strategy tests run a full grid with no baseline. They try every combination of:
+- the number of styles chosen each year (2–6);
+- the lookback (3 or 5 years);
+- the style weights (EW, IV or MV);
+- the share of the universe held (top 20, 25 or 30%).
+
+That makes 90 configurations, all on identical rules otherwise. The results print as matrices,
+one block per K, so any single setting can be compared with all the others held fixed. Each block
+covers 2016–20 (the data used to choose), 2016–18, 2019–20, EVAL and LIVE. The tests also print a
+ranking and the median effect of each setting.
+
+They then check the configured strategy:
+- weights;
+- the sector cap;
+- look-ahead: each yearly decision is recomputed with all later data deleted;
+- reproduction of the frozen numbers.
+
+Outputs go to `outputs/strategy_tests/`: `grid_all_configurations.csv`, `grid_ranked_by_2016_20_sharpe.csv`, `grid_matrices.txt` and `checks.csv`.
 The execution tests are fangling's 30 synthetic-data tests of the engine. They cover accounting,
 lots and fees, settlement, corporate actions and look-ahead. There is also one check that the
 real-data run reproduces the frozen account.
