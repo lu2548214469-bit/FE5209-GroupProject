@@ -6,7 +6,6 @@ adds the next scheduled rebalance only when its actual weekly signal exists.
 from pathlib import Path
 from datetime import timedelta
 import argparse
-import copy
 import json
 import sys
 import numpy as np
