@@ -8,6 +8,11 @@ the top 20% of stocks by the combined score.
 **New to the project? Start with [GUIDE.md](GUIDE.md)**. It covers setup in a fresh environment,
 every command, what each one prints and the conclusion to draw from it.
 
+**October 20 continuation:** [OOS update instructions](docs/OOS_UPDATE_20261020_ZH.md)
+describe the calendar-inclusive test window, required new inputs, and separate reporting commands.
+The original frozen configuration and its October 15 results are preserved. The continuation refuses
+to report October 20 when prices, current weekly signals or exact STI total-return levels are missing.
+
 ## Quick start
 
 ```bash
