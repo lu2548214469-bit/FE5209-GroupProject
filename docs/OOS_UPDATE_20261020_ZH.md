@@ -25,6 +25,16 @@
 
 ## 先检查数据
 
+公开报价可以自行下载和重叠核对（这些命令不改写原数据）：
+
+```sh
+python scripts/fetch_oos_public_quotes.py --out outputs/oos_public_raw
+python scripts/audit_oos_public_overlap.py --raw-dir outputs/oos_public_raw --out outputs/oos_public_audit
+```
+
+下载器也保留原始响应及SHA256。`^STI`仅用于价格对照，不能当作`.TRISTI`。
+此入口不会自动把未验证的因子分数、汇率时点或股利换算写入正式输入。
+
 在仓库根目录：
 
 ```sh
