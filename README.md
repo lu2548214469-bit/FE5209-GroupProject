@@ -19,6 +19,7 @@ to report October 20 when prices, current weekly signals or exact STI total-retu
 python -m venv .venv
 # Windows: .venv\Scripts\activate      macOS / Linux: source .venv/bin/activate
 pip install -r requirements.txt
+python -m pip install -e .
 python run_backtest.py
 ```
 
@@ -39,6 +40,9 @@ tests/ (run separately)
   factor_tests    which factors work, 2011-2015
   strategy_tests  which configuration to use, 2016-2020   -> chose K3 / IV weekly / top 20%
   execution_tests is the execution engine correct
+  ablation_tests  how K3/K6 and EW/IV change results, 2016-2026
+  factor_diagnostics
+                  post-backtest Top-3 predictability and factor-volatility diagnostics, 2016-2026
 ```
 
 ## Repository layout
@@ -61,6 +65,8 @@ tests/
   factor_tests/              single-factor tests 2011-15 (Ganjunhui, research/sg-single-factor-independent)
   strategy_tests/            configuration selection 2016-20 (24 configurations, no look-ahead)
   execution_tests/           execution engine tests + reproduction of the frozen final run
+  ablation_tests/            2×2 K3/K6 × EW/IV weekly research ablation, results and figures
+  factor_diagnostics/        post-backtest Top-3 predictability and factor-volatility diagnostics
 scripts/build_clean_data.py  how data/ was built from the provider's raw files
 ```
 
@@ -104,6 +110,26 @@ data.
 The data end on 2026-10-15; there are no prices for 2026-10-16.
 
 ## Results
+
+### Update 2026-10-24: course test window to 2026-10-20
+
+Data extended as described in `data/README.md` (signal week 2026-10-16 added; daily prices to 10-20 for held names;
+P9D dividend of 10-12 added). The configuration selection (`tests/strategy_tests`, 2016–20 only) is unchanged:
+K3 / IV weekly / top 20% ranks first (Sharpe 0.94). Execution account, trades at the close of 10-01, 10-05, 10-12 and
+10-19 (signals 09-25, 10-02, 10-09, 10-16). Two window conventions, same account (ending NAV SGD 264,827.09):
+
+| | From 10-01 close (`run_backtest.py`) | From 09-30 close, includes 10-01 (`scripts/report_oos.py`, OOS branch) |
+|---|---|---|
+| Strategy cumulative return | −6.63% (283,634 → 264,827) | −7.29% (285,647 → 264,827) |
+| STI total return | −4.65% | −4.79% |
+| Excess vs STI | −1.98 pp | −2.50 pp |
+| Annual return / volatility (annualised short sample) | −73.6% / 18.0% | −74.4% / 17.3% |
+| Sharpe (rf 0) / max drawdown | −7.28 / 7.3% | −7.76 / 7.3% |
+| Fills / position trades / win rate | 61 / 19 / 5.3% | 75 / 19 / 5.3% |
+
+The OOS branch's `continue_oos.py` on this data gives the same ending NAV (its >= 50-names market-coverage guard
+was relaxed for that cross-check, because prices after 10-15 were added only for held names).
+EVAL is unchanged (SGD 100,000 → 285,647). The tables below are the earlier window to 2026-10-15.
 
 ### Part A: weekly backtest, net of 10 bp, risk-free rate 0
 
@@ -188,6 +214,17 @@ produced 3,525 fills and an ending NAV of SGD 328,755.
 | `execution/contributions.csv`, `risk.csv`, `audit.json` | per-stock daily contribution, concentration, accounting checks |
 | `run_manifest.json` | configuration used and trade statistics |
 
+## Course deliverables (`deliverables/`)
+
+`outputs/` is not committed, so the files the course asks for are kept in `deliverables/`.
+They are copies of what `python run_backtest.py` writes and are reproduced exactly by it.
+
+| File | Content |
+|---|---|
+| `10_portfolio_assets.csv` | the assets held in the test-period portfolio (to 2026-10-20) |
+| `10_portfolio_daily_close.csv` | their daily closing prices, 2025-10-01 to 2026-10-20 (listing currency) |
+| `09_performance_metrics.csv` | course performance metrics, TEST period and EVAL reference |
+
 ## Tests (run separately)
 
 ```bash
@@ -197,7 +234,19 @@ python tests/strategy_tests/run_strategy_tests.py      # 24 configurations, 2016
 python tests/execution_tests/run_execution_tests.py    # 31 tests, about 30 seconds
 ```
 
-What each one prints and how to read it: see [GUIDE.md](GUIDE.md) and [tests/README.md](tests/README.md).
+Two optional research analyses are deliberately separate from `run_all_tests.py`:
+
+```bash
+python tests/ablation_tests/src/run_ablation.py         # 2×2 K3/K6 × EW/IV ablation
+python tests/ablation_tests/src/plot_ablation.py        # plots saved ablation results
+python tests/factor_diagnostics/run_factor_diagnostics.py  # requires the main-backtest outputs above
+```
+
+The ablation run compares four full weekly-backtest variants and writes its results to
+`tests/ablation_tests/results/` and figures to `tests/ablation_tests/figures/`. Factor diagnostics
+read the final main-backtest factor-return and annual-decision files, then write their outputs to
+`tests/factor_diagnostics/`. See [GUIDE.md](GUIDE.md) and [tests/README.md](tests/README.md) for
+commands, prerequisites, and output details.
 
 ## Limitations
 

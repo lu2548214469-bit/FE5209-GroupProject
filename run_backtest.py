@@ -17,42 +17,23 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 import time
 from pathlib import Path
 
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
+import sys
 
-from sgfactor.backtest import net_returns, trade_stats, weekly_backtest          # noqa: E402
-from sgfactor.backtest.live_window import live_window                            # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))   # works without `pip install -e .`
+
+from sgfactor.backtest import trade_stats  # noqa: E402
+from sgfactor.backtest.runner import backtest  # noqa: E402
+from sgfactor.backtest.live_window import live_window  # noqa: E402
 from sgfactor.backtest.report import live_table, period_mask, summary_table, yearly_table  # noqa: E402
-from sgfactor.config import load_config, resolve                                # noqa: E402
-from sgfactor.data import benchmark_weekly, load_benchmark, load_universe        # noqa: E402
-from sgfactor.live import run_execution                                         # noqa: E402
+from sgfactor.config import load_config, resolve  # noqa: E402
+from sgfactor.data import load_benchmark  # noqa: E402
+from sgfactor.live import run_execution  # noqa: E402
 from sgfactor.live.report import course_metrics, metrics_table, portfolio_prices  # noqa: E402
-from sgfactor.strategy import run_strategy                                      # noqa: E402
-
-
-def backtest(cfg: dict, universe: pd.DataFrame | None = None, fret: pd.DataFrame | None = None) -> dict:
-    """Full run for one configuration. Returns all intermediate tables."""
-    universe = load_universe(cfg) if universe is None else universe
-    res = run_strategy(universe, cfg, fret)
-    path, ledger = weekly_backtest(res["holdings"], universe)
-    cal = path.reset_index()[["signal_date", "execution_date", "next_execution_date"]]
-    weekly = pd.DataFrame({
-        "strategy": net_returns(path, cfg["costs"]["one_way"]),
-        "strategy_stress_cost": net_returns(path, cfg["costs"]["stress_one_way"]),
-        "strategy_gross": path["gross_return"],
-        "STI": benchmark_weekly(load_benchmark(cfg), cal),
-        "EW_universe": universe.groupby("signal_date")["forward_return"].mean().reindex(path.index),
-    })
-    weekly.insert(0, "next_execution_date", path["next_execution_date"])
-    weekly["n_names"] = path["n_names"]
-    weekly["one_way_turnover"] = path["one_way_turnover"]
-    res.update(path=path, ledger=ledger, weekly=weekly, universe=universe)
-    return res
 
 
 def execution_targets(res: dict, live: dict, cfg: dict) -> pd.DataFrame:

@@ -1,8 +1,8 @@
 # Guide: running the project from scratch
 
 This guide takes you from a fresh computer to every result in the project. For each step it shows
-the command, the expected output and the conclusion to draw from it. The tests (steps 3–5) are
-optional and run separately from the main program (step 2).
+the command, the expected output and the conclusion to draw from it. The tests (steps 3–5) and
+research analyses (steps 6–7) are optional and run separately from the main program (step 2).
 
 | Step | Command | Time | Answers |
 |---|---|---|---|
@@ -11,12 +11,14 @@ optional and run separately from the main program (step 2).
 | 3 | `python tests/factor_tests/run_factor_tests.py` | 1–2 min | which style factors carry a premium (2011–15) |
 | 4 | `python tests/strategy_tests/run_strategy_tests.py` | 2 min | why this configuration (2016–20) |
 | 5 | `python tests/execution_tests/run_execution_tests.py` | 30 s | is the execution engine correct |
+| 6 | `python tests/ablation_tests/src/run_ablation.py` | about 10 s | whether K3/K6 and EW/IV drive the result |
+| 7 | `python tests/factor_diagnostics/run_factor_diagnostics.py` | under 1 min | whether annual Top-3 selection is predictive and how factor volatility differs |
 | all tests | `python tests/run_all_tests.py` | 4 min | steps 3–5 in order, with a PASS/FAIL summary |
 
 ## 1. Environment
 
 **Requirements:**
-- Python 3.10–3.13 (developed on 3.13).
+- Python 3.10–3.14 (developed on 3.13, also checked on 3.14).
 - About 200 MB of disk space.
 - No internet access is needed after `pip install`: all data are in `data/`.
 
@@ -33,14 +35,15 @@ python -m venv .venv
 # macOS / Linux:               source .venv/bin/activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt          # numpy, pandas, scipy, pyyaml, matplotlib
+python -m pip install -e .               # install the local src/sgfactor package
 ```
 
 Conda works too: `conda create -n sgfactor python=3.12`, then `conda activate sgfactor`, then
-`pip install -r requirements.txt`.
+`pip install -r requirements.txt` and `python -m pip install -e .`.
 
 **PyCharm:**
 1. Open the project folder.
-2. Settings → Project → Python Interpreter → Add Interpreter → Virtualenv → New, base Python 3.10–3.13.
+2. Settings → Project → Python Interpreter → Add Interpreter → Virtualenv → New, base Python 3.10–3.14.
 3. Open the Terminal tab (it activates the interpreter) and run `pip install -r requirements.txt`.
 4. Run `run_backtest.py` with the green arrow, or type the commands below in the Terminal.
 
@@ -203,11 +206,59 @@ There are 31 unit tests:
 
 **Conclusion:** the account results in step 2 come from a tested engine.
 
+## 6. Ablation analysis (2016–2026)
+
+```bash
+python tests/ablation_tests/src/run_ablation.py
+python tests/ablation_tests/src/plot_ablation.py
+# Optional: add STI total return to the cumulative-wealth chart
+python tests/ablation_tests/src/plot_ablation.py --include-sti
+```
+
+The ablation holds the frozen weekly setup fixed and compares all four combinations of factor
+selection breadth and weighting:
+
+| Variant | Selection | Weighting |
+|---|---:|---|
+| `K6_EW` | 6 factors | Equal weight |
+| `K6_IV` | 6 factors | Inverse volatility |
+| `K3_EW` | 3 factors | Equal weight |
+| `K3_IV` | 3 factors | Inverse volatility |
+
+**Outputs:** calculation tables and methodology in `tests/ablation_tests/results/`; cumulative-
+wealth and evaluation-metric figures in `tests/ablation_tests/figures/`.
+
+**Conclusion:** this is a sensitivity analysis, not a configuration-selection stage. It is excluded
+from `run_all_tests.py` because it runs four full weekly backtests.
+
+## 7. Factor diagnostics (2016–2026)
+
+Run step 2 first, because the diagnostics use its factor-return and annual-selection files:
+
+```bash
+python run_backtest.py --skip-execution
+python tests/factor_diagnostics/run_factor_diagnostics.py
+```
+
+The diagnostics examine:
+
+- annualized factor returns for the selected Top-3 versus unselected Bottom-3 factors;
+- the distribution of trailing 52-week long-short factor volatility.
+
+**Outputs:** `tests/factor_diagnostics/results/factor_predictability_2016_2026.csv` and PNG/PDF
+figures in `tests/factor_diagnostics/figures/`.
+
+**Conclusion:** these are post-backtest research diagnostics. They remain outside
+`run_all_tests.py` because they require generated `outputs/SG_Adaptive_K3_IVweekly_Top20/` files.
+
 ## All tests at once
 
 ```bash
 python tests/run_all_tests.py            # --skip factor | strategy | execution to leave a stage out
 ```
+
+This command runs only steps 3–5. Run the ablation and factor diagnostics separately when their
+research outputs are needed.
 
 **Expected ending:**
 
@@ -228,3 +279,7 @@ SUMMARY
    CAGR 20.1% against 17.6% for the STI.
 4. **Test (October 2026).** The course test window gives the performance-metric table
    (`09_performance_metrics.csv`) and the asset price CSV (`10_*.csv`).
+5. **Ablation (2016–26/09).** The 2×2 K3/K6 × EW/IV comparison separates selection-breadth and
+   weighting effects under the frozen weekly framework.
+6. **Diagnostics (2016–26/09).** Annual Top-3 predictability and rolling factor-volatility figures
+   provide supporting evidence on adaptive selection and factor risk.

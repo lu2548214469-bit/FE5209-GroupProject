@@ -81,3 +81,18 @@ The values are copied exactly as text. That way the factor tests reproduce the f
 `research/sg-single-factor-independent` branch exactly.
 
 `price_eligible` is kept here because the tests compare the price-eligible sample with all stocks.
+
+## Update 2026-10-24: live window extended to 2026-10-20
+
+- `sg_universe_weekly.csv.gz`: unchanged up to signal 2026-10-09; adds the 2026-10-16 signal week (92 names) from the
+  stitched panel `sg_six_factor_panel_2006_to_2026_10_20_STITCHED_FX.csv.gz` (Size/Value to 10-09 from the 10-21
+  FX-backfilled panel, 10-16 SGD-converted by the data team). The 10-16 week is used as a signal only; its
+  `forward_return` is the partial 10-19 -> 10-20 return and does not enter any reported period.
+- `prices_daily.csv.gz`: 2026-10-16 .. 10-23 added for the 35 stocks held by K3 / K4 from eoddata.com (AGS from
+  tipranks.com). On the overlap 10-13 .. 10-15 every close equals LSEG and volume is within 0.4%.
+  `adj_close` after 10-15 = close x the 10-15 adjustment factor (no ex-dates in the window for these names).
+- `sti_total_return_daily.csv`: LSEG to 10-15, then chained with STI price-index closes (abcbourse, iTiger,
+  Trading Economics). The earlier LSEG value for 10-16 was an intraday snapshot and was replaced.
+- `corporate_actions.csv`: adds P9D (Civmec) cash dividend, ex 2026-10-12, SGD 0.03130225 (AUD 0.035 x ex-date AUD/SGD 0.8943499923, as in the OOS-20261020 branch; record 10-13,
+  paid 10-23); the source events otherwise end 2026-09-15.
+- `trading_sessions.csv`: adds 10-16, 10-19 .. 10-23. `fx_daily.csv`: forward-filled (every held name trades in SGD).
