@@ -1,0 +1,46 @@
+{
+  "variants": {
+    "K6_EW": [
+      6,
+      "EW"
+    ],
+    "K6_IV": [
+      6,
+      "IV"
+    ],
+    "K3_EW": [
+      3,
+      "EW"
+    ],
+    "K3_IV": [
+      3,
+      "IV"
+    ]
+  },
+  "periods": {
+    "TRAIN_2016_2020": [
+      "2016-01-01",
+      "2020-12-31"
+    ],
+    "EVAL_2021_2026SEP": [
+      "2021-01-01",
+      "2026-09-18"
+    ],
+    "FULL_2016_2026SEP": [
+      "2016-01-01",
+      "2026-09-18"
+    ]
+  },
+  "K3_IV_frozen_comparison": "NOT_CHECKED",
+  "costs": "Part A weekly net 10bp one-way; not Part B account",
+  "max_drawdown": "positive loss magnitude",
+  "same_parameters": "3y selection lookback; IV 52w, bounds 5%-80%, weekly; top20% holdings, buffer 30%, sector cap 30%",
+  "selection": "K3 annually selects 3 based on mean/std completed factor L/S; K6 includes all 6",
+  "note": "Train 2016-20 used for configuration selection; evaluation 2021-Sep2026 separate",
+  "outputs": [
+    "ablation_performance.csv",
+    "ablation_effects.csv",
+    "ablation_weekly_returns.csv",
+    "ablation_annual_decisions.csv"
+  ]
+}

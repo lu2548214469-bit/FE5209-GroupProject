@@ -14,9 +14,9 @@ data:
 
 start: "2021-01-01"            # account starts in cash at the first evaluation signal (cash reset)
 eval_end: "2026-09-30"         # EVAL is reported up to this day; LIVE from the first live trade close
-end: "2026-10-15"              # last marking day = last day with daily prices (end of the live window)
+end: "2026-10-20"              # last marking day = last day with daily prices (end of the live window)
 price_history_from: "2020-09-01"   # warm-up for the 20-day ADV
-settlement_calendar_extension: ["2026-10-16", "2026-10-19"]   # calendar-only days for T+2 of the last trades
+settlement_calendar_extension: ["2026-10-21", "2026-10-22"]   # calendar-only days for T+2 of the last trades
 
 settings:                      # ExecutionConfig (live/engine.py)
   initial_cash: 100000         # SGD
