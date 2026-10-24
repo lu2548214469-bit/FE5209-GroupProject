@@ -66,7 +66,7 @@ weights re-estimated weekly, top 20%**.
 1. **Part A.** Style scores, then weekly factor returns, the yearly choice of 3 styles, the weekly
    style weights, the composite score and the holdings. These give a weekly NAV net of 10 bp.
 2. **Part B.** The same target weights are traded in a daily execution account, starting from
-   SGD 100,000 in January 2021 and running to 2026-10-15. It models:
+   SGD 100,000 in January 2021 and running to 2026-10-20. It models:
    - board lots;
    - minimum fees;
    - volume limits;
@@ -84,10 +84,12 @@ period  series    ...  ann_return  ann_vol  sharpe  max_drawdown  calmar
   eval  strategy        0.2453      0.1658   1.4088   0.1234        1.9886
   eval  STI             0.1728      0.1219   1.3703   0.1048        1.6493
 Styles chosen each year:   2016 Momentum, Quality, Size ... 2026 Size, Momentum, Quality
-LIVE window ... strategy -0.0619   STI -0.0466
+LIVE window ... strategy -0.0693   STI -0.0465
 Part B: daily execution account ...
   EVAL 2021-01-08 .. 2026-09-30: SGD 100,000 -> 285,647  CAGR 20.1%, max drawdown 14.4%, Sharpe (daily) 1.36
-  LIVE 2026-10-01 close .. 2026-10-15: SGD 283,634 -> 266,334  return -6.10%   | STI -4.66%
+  LIVE 2026-10-01 close .. 2026-10-20:
+  SGD 283,634 -> 264,827
+  return -6.63% | STI -4.65%
 Course performance metrics (execution account; 09_performance_metrics.csv):
   annual_return, sharpe_ratio_rf0, max_drawdown, win_rate_position_trades, annual_volatility,
   drawdown_count, number_of_trades_fills, avg_holding_period_days, profit_per_trade_sgd, ...
@@ -107,7 +109,7 @@ The results are written to `outputs/SG_Adaptive_K3_IVweekly_Top20/`. The files t
 - **2021 to September 2026 (out of sample, execution account).** SGD 100,000 grows to 285,647.
   The CAGR is 20.1%, against 17.6% for the STI, with a similar maximum drawdown (14.4% vs 14.5%).
   This was never used to choose the configuration.
-- **October 2026 test window.** −6.1% against −4.7% for the STI over 10 trading days. This is too
+- October 2026 test window. The execution account returned -6.63% versus -4.65% for the STI from October 1 close to October 20 close, covering 13 daily return observations. This short period is insufficient to assess long-term performance. This is too
   short to judge.
 - **Style choice.** Momentum is chosen every year, and Size in 10 of 11 years.
 
@@ -196,13 +198,13 @@ This configuration is the one frozen in `config/strategy.yaml`.
 python tests/execution_tests/run_execution_tests.py
 ```
 
-There are 31 unit tests:
-- **30 synthetic tests** by fangling. They cover accounting identities, board lots, minimum fees,
-  T+2 settlement, dividends, splits, delisting, volume caps and no look-ahead in orders.
-- **One integration test.** The real-data run must reproduce the frozen account: 5,418 fills and an
-  ending NAV of SGD 266,334.30.
+There are **39 automated tests**:
 
-**Expected:** `Ran 31 tests ... OK`.
+- **30 synthetic execution tests** by fangling. They cover accounting identities, board lots, minimum fees, T+2 settlement, dividends, splits, delisting, volume caps, and no look-ahead in orders.
+- **8 OOS readiness and reporting tests.** They verify data completeness, signal availability, benchmark consistency, reporting boundaries, and P&L reconciliation.
+- **One integration test.** The real-data run must reproduce the frozen account: **5,432 fills** and an **ending NAV of SGD 264,827.09** (as of 2026-10-20).
+
+**Expected:** `Ran 39 tests ... OK`.
 
 **Conclusion:** the account results in step 2 come from a tested engine.
 
