@@ -109,8 +109,8 @@ The results are written to `outputs/SG_Adaptive_K3_IVweekly_Top20/`. The files t
 - **2021 to September 2026 (out of sample, execution account).** SGD 100,000 grows to 285,647.
   The CAGR is 20.1%, against 17.6% for the STI, with a similar maximum drawdown (14.4% vs 14.5%).
   This was never used to choose the configuration.
-- October 2026 test window. The execution account returned -6.63% versus -4.65% for the STI from October 1 close to October 20 close, covering 13 daily return observations. This short period is insufficient to assess long-term performance. This is too
-  short to judge.
+- **October 2026 test window.** −6.63% against −4.65% for the STI from the 10-01 close to the 10-20 close
+  (13 trading days). This is too short to judge.
 - **Style choice.** Momentum is chosen every year, and Size in 10 of 11 years.
 
 Options:

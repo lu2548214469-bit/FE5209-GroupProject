@@ -105,13 +105,13 @@ data.
 | Pre | 2016-01 .. 2018-12 | configuration selection (with OBS) |
 | OBS (observation) | 2019-01 .. 2020-12 | configuration selection |
 | EVAL (evaluation) | 2021-01 .. 2026-09-18 (last holding ends 2026-09-28) | out-of-sample, reported once, never used to choose |
-| TEST / live | trades at the close of 2026-10-01, 10-05 and 10-12, using the latest weekly signal before each (09-25, 10-02, 10-09); marked daily to 2026-10-15 | course test period |
+| TEST / live | trades at the close of 2026-10-01, 10-05, 10-12 and 10-19, using the latest weekly signal before each (09-25, 10-02, 10-09, 10-16); marked daily to 2026-10-20 | course test period |
 
-The data end on 2026-10-15; there are no prices for 2026-10-16.
+LSEG daily prices end on 2026-10-15; 10-16 .. 10-20 prices for the held stocks were added from public quotes (see `data/README.md`).
 
 ## Results
 
-### Update 2026-10-24: course test window to 2026-10-20
+### Course test window: 2026-10-01 .. 2026-10-20
 
 Data extended as described in `data/README.md` (signal week 2026-10-16 added; daily prices to 10-20 for held names;
 P9D dividend of 10-12 added). The configuration selection (`tests/strategy_tests`, 2016–20 only) is unchanged:
@@ -129,7 +129,8 @@ K3 / IV weekly / top 20% ranks first (Sharpe 0.94). Execution account, trades at
 
 The OOS branch's `continue_oos.py` on this data gives the same ending NAV (its >= 50-names market-coverage guard
 was relaxed for that cross-check, because prices after 10-15 were added only for held names).
-EVAL is unchanged (SGD 100,000 → 285,647). The tables below are the earlier window to 2026-10-15.
+EVAL is unchanged (SGD 100,000 → 285,647). An earlier version of this README reported the window to 2026-10-15
+(−6.10% vs STI −4.66%, before the P9D dividend was added).
 
 ### Part A: weekly backtest, net of 10 bp, risk-free rate 0
 
@@ -141,10 +142,10 @@ EVAL is unchanged (SGD 100,000 → 285,647). The tables below are the earlier wi
 | EVAL 2021-01..2026-09: STI | 17.3% | 12.2% | 1.37 | 10.5% | 1.65 |
 | EVAL 2021-01..2026-09: equal-weight universe | 12.1% | 12.0% | 1.02 | 16.7% | 0.73 |
 
-Live window, daily NAV from the 2026-10-01 close to 2026-10-15:
-- Strategy: −6.2%.
+Live window, daily NAV from the 2026-10-01 close to 2026-10-20 (Part A, 10 bp proportional cost):
+- Strategy: −6.9%.
 - STI: −4.7%.
-- Equal-weight universe: −4.8%.
+(The equal-weight universe is not reported after 10-15, because public prices were added only for held stocks.)
 
 ### Part B: daily execution account (headline result)
 
@@ -163,22 +164,22 @@ Setting `FINAL_100K_DIV14_V1`, frozen by the group on 2026-10-20 (see `config/ex
 
 Course performance metrics (`09_performance_metrics.csv`):
 
-| Metric | TEST 2026-10-01 close .. 10-15 | EVAL 2021-01 .. 2026-09 (reference) |
+| Metric | TEST 2026-10-01 close .. 10-20 | EVAL 2021-01 .. 2026-09 (reference) |
 |---|---|---|
-| NAV, SGD | 283,634 → 266,334 | 100,000 → 285,647 |
-| Cumulative return (STI) | −6.10% (−4.66%) | +185.6% (+153.5%) |
-| Annual return (STI) | −79.5% (−70.0%); annualised from 10 days | 20.2% (17.7%) |
-| Annual volatility | 19.8% | 14.3% |
-| Sharpe ratio, rf 0 (STI) | −7.88 (−5.97) | 1.36 (1.49) |
-| Max drawdown (STI) | 6.8% (5.3%) | 14.4% (14.5%) |
-| Drawdown patterns: count / longest | 2 / 6 days | 53 / 663 days |
-| Win rate (position trades) | 11.1% (2 of 18) | 65.5% |
-| Number of trades (fills: buys / sells) | 47 (32 / 15) | 5,357 (3,380 / 1,977) |
-| Position trades | 18 | 84 |
-| Average holding period | 10 days (whole window) | 293 trading days |
-| Profit per trade (position trade), SGD | −961 | 2,210 |
-| Sortino / Calmar | −5.93 / −11.77 | 1.33 / 1.41 |
-| Fees / slippage / dividends, SGD | 244 / 21 / 0 | 27,937 / 2,780 / 46,269 |
+| NAV, SGD | 283,634 → 264,827 | 100,000 → 285,647 |
+| Cumulative return (STI) | −6.63% (−4.65%) | +185.6% (+153.5%) |
+| Annual return (STI) | −73.6% (−60.3%); annualised from 13 days | 20.2% (17.7%) |
+| Annual volatility | 18.0% | 14.3% |
+| Sharpe ratio, rf 0 (STI) | −7.28 (−5.19) | 1.36 (1.49) |
+| Max drawdown (STI) | 7.3% (5.3%) | 14.4% (14.5%) |
+| Drawdown patterns: count / longest | 2 / 9 days | 53 / 663 days |
+| Win rate (position trades) | 5.3% (1 of 19) | 65.5% |
+| Number of trades (fills: buys / sells) | 61 (37 / 24) | 5,357 (3,380 / 1,977) |
+| Position trades | 19 | 84 |
+| Average holding period | 12 days (whole window) | 293 trading days |
+| Profit per trade (position trade), SGD | −990 | 2,210 |
+| Sortino / Calmar | −5.62 / −10.10 | 1.33 / 1.41 |
+| Fees / slippage / dividends, SGD | 326 / 45 / 322 | 27,937 / 2,780 / 46,269 |
 
 Definitions are in `src/sgfactor/live/report.py`. Notes on two of them:
 - **Number of trades** counts every execution. The account trims and tops up weights every week,
@@ -187,7 +188,7 @@ Definitions are in `src/sgfactor/live/report.py`. Notes on two of them:
   sold, and its profit includes fees and dividends. Positions open at a window edge are cut at that
   edge.
 
-Ten trading days are far too short to judge the strategy.
+Thirteen trading days are far too short to judge the strategy.
 
 The engine port was checked against fangling's own run on the earlier 74-stock panel. Both
 produced 3,525 fills and an ending NAV of SGD 328,755.
@@ -264,7 +265,7 @@ commands, prerequisites, and output details.
   audit file labels the result `SOURCE_DIVIDEND_14D_ESTIMATE_UNVERIFIED_PRICE_SHARE_BASIS`.
 - **Risk-free rate.** Sharpe ratios use a risk-free rate of 0, because there is no SGD risk-free
   series in the package.
-- **Short test period.** The course test window is 10 trading days, so its annualised figures are
+- **Short test period.** The course test window is 13 trading days (10-01 close to 10-20), so its annualised figures are
   not meaningful.
 
 ## Data licence
